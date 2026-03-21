@@ -383,9 +383,10 @@ function parseMarkdown(text) {
         let mathBlocks = [];
         
         // Extract display math ($$...$$) first
+        // Add newlines around it to force Markdown to treat it as a block
         tempText = tempText.replace(/\$\$([\s\S]+?)\$\$/g, (match, p1) => {
             mathBlocks.push({ type: 'display', math: p1 });
-            return `MATHBLOCK${mathBlocks.length - 1}ENDBLOCK`;
+            return `\n\nMATHBLOCK${mathBlocks.length - 1}ENDBLOCK\n\n`;
         });
 
         // Extract inline math ($...$)
@@ -402,7 +403,11 @@ function parseMarkdown(text) {
             const placeholder = `MATHBLOCK${index}ENDBLOCK`;
             if (block.type === 'display') {
                 // Robust Regex: Match <p> tags with optional whitespace around the placeholder
+                // Since we injected \n\n, marked will definitely wrap it in <p>
+                // We strip the <p> tags to get a standalone math block
                 html = html.replace(new RegExp(`<p>\\s*${placeholder}\\s*</p>`, 'g'), `$$${block.math}$$`);
+                
+                // Also handle raw replacement just in case
                 html = html.replace(new RegExp(placeholder, 'g'), `$$${block.math}$$`);
             } else {
                 html = html.replace(new RegExp(placeholder, 'g'), `$${block.math}$`);
@@ -423,11 +428,20 @@ async function loadConfig() {
     const res = await fetch(DATA_PATH + 'config.json');
     if (!res.ok) throw new Error(`HTTP status ${res.status}`);
     siteConfig = await res.json();
-    document.getElementById('navTitle').innerText = siteConfig.title.split(' - ')[0];
-    document.getElementById('homeTitle').innerText = siteConfig.title.split(' - ')[1] || siteConfig.title;
-    document.getElementById('homeSubtitle').innerText = siteConfig.subtitle;
-    document.getElementById('footerOrg').innerText = "主办：" + siteConfig.organization;
-    document.getElementById('footerCopy').innerText = "© " + siteConfig.copyright + ". 保留所有权利.";
+    
+    // Safe DOM updates
+    const navTitle = document.getElementById('navTitle');
+    const homeTitle = document.getElementById('homeTitle');
+    const homeSubtitle = document.getElementById('homeSubtitle');
+    const footerOrg = document.getElementById('footerOrg');
+    const footerCopy = document.getElementById('footerCopy');
+
+    if (navTitle) navTitle.innerText = siteConfig.title.split(' - ')[0];
+    if (homeTitle) homeTitle.innerText = siteConfig.title.split(' - ')[1] || siteConfig.title;
+    if (homeSubtitle) homeSubtitle.innerText = siteConfig.subtitle;
+    if (footerOrg) footerOrg.innerText = "主办：" + siteConfig.organization;
+    if (footerCopy) footerCopy.innerText = "© " + siteConfig.copyright + ". 保留所有权利.";
+    
   } catch (e) {
     console.error("Failed to load config", e);
   }
@@ -435,6 +449,8 @@ async function loadConfig() {
 
 async function loadAbout() {
   const container = document.getElementById('aboutContent');
+  if (!container) return; // Safety check
+
   try {
     const res = await fetch(DATA_PATH + 'about.json');
     if (!res.ok) throw new Error(`HTTP status ${res.status}`);
@@ -443,7 +459,6 @@ async function loadAbout() {
     renderMath();
   } catch (e) {
     console.error(e);
-    // Use div and inline styles to ensure centering
     container.innerHTML = "<div style='text-align: center; color: #dc2626; padding: 2rem 0;'>加载简介失败</div>";
   }
 }
@@ -451,6 +466,10 @@ async function loadAbout() {
 async function loadNotices() {
   const container = document.getElementById('noticesList');
   const homeContainer = document.getElementById('homeNotices');
+  
+  // Safety check
+  if (!container) return; 
+
   try {
     const res = await fetch(DATA_PATH + 'notices.json');
     if (!res.ok) throw new Error(`HTTP status ${res.status}`);
@@ -466,7 +485,7 @@ async function loadNotices() {
     `).join('');
 
     // Render Home Summary
-    if (noticesData.length > 0) {
+    if (homeContainer && noticesData.length > 0) {
        const latest = noticesData[0];
        homeContainer.innerHTML = `
         <article class="paper-card rounded-lg p-5 cursor-pointer" onclick="navigateTo('notices')">
@@ -480,7 +499,7 @@ async function loadNotices() {
   } catch (e) {
     console.error(e);
     container.innerHTML = "<div style='text-align: center; color: #dc2626; padding: 2rem 0;'>加载通知失败</div>";
-    homeContainer.innerHTML = "";
+    if (homeContainer) homeContainer.innerHTML = "";
   }
 }
 
@@ -492,6 +511,8 @@ function openNoticeDetail(id) {
     }
 
     const container = document.getElementById('noticeDetailContent');
+    if (!container) return;
+
     container.innerHTML = `
         <h1>${notice.title}</h1>
         <p style="text-indent: 0; font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
@@ -501,7 +522,9 @@ function openNoticeDetail(id) {
     `;
     
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-    document.getElementById('page-notice-detail').classList.add('active');
+    const detailPage = document.getElementById('page-notice-detail');
+    if (detailPage) detailPage.classList.add('active');
+    
     window.scrollTo(0, 0);
     renderMath();
 }
@@ -512,6 +535,8 @@ function backToNoticesList() {
 
 async function loadPapers() {
   const tbody = document.getElementById('papersTable');
+  if (!tbody) return;
+
   try {
     const res = await fetch(DATA_PATH + 'papers.json');
     if (!res.ok) throw new Error(`HTTP status ${res.status}`);
@@ -525,6 +550,8 @@ async function loadPapers() {
 
 async function loadBlogIndex() {
   const container = document.getElementById('blogList');
+  if (!container) return;
+
   try {
     const res = await fetch(DATA_PATH + 'blog/index.json');
     if (!res.ok) throw new Error(`HTTP status ${res.status}`);
@@ -538,6 +565,8 @@ async function loadBlogIndex() {
 
 async function loadBlogPost(id) {
   const container = document.getElementById('blogDetailContent');
+  if (!container) return;
+  
   container.innerHTML = "<div class='text-center p-10'><div class='loading-spinner'></div></div>";
   
   try {
@@ -564,14 +593,15 @@ async function loadBlogPost(id) {
 function renderPapers(data) {
   const tbody = document.getElementById('papersTable');
   const noResult = document.getElementById('noPapersResult');
+  if (!tbody) return;
   
   if (!data || data.length === 0) {
     tbody.innerHTML = '';
-    noResult.classList.remove('hidden');
+    if (noResult) noResult.classList.remove('hidden');
     return;
   }
   
-  noResult.classList.add('hidden');
+  if (noResult) noResult.classList.add('hidden');
   tbody.innerHTML = data.map(paper => `
     <tr style="border-bottom: 1px solid var(--border);">
       <td class="py-3 px-4 font-mono">${paper.year}</td>
@@ -594,14 +624,15 @@ function renderPapers(data) {
 function renderBlogList(data) {
   const container = document.getElementById('blogList');
   const noResult = document.getElementById('noBlogResult');
+  if (!container) return;
   
   if (!data || data.length === 0) {
     container.innerHTML = '';
-    noResult.classList.remove('hidden');
+    if (noResult) noResult.classList.remove('hidden');
     return;
   }
   
-  noResult.classList.add('hidden');
+  if (noResult) noResult.classList.add('hidden');
   container.innerHTML = data.map(post => `
     <article class="paper-card rounded-lg p-5 cursor-pointer" onclick="openBlogPost(${post.id})">
       <span class="text-xs font-mono" style="color: var(--accent);">${post.date}</span>
@@ -633,14 +664,20 @@ function navigateTo(pageId) {
 }
 
 function filterPapers() {
-  const searchText = document.getElementById('paperSearch').value;
+  const input = document.getElementById('paperSearch');
+  if (!input) return;
+  const searchText = input.value;
+  
   if (!papersData.length) return;
   const filtered = papersData.filter(p => p.year.includes(searchText));
   renderPapers(filtered);
 }
 
 function filterBlogs() {
-  const searchText = document.getElementById('blogSearch').value.toLowerCase();
+  const input = document.getElementById('blogSearch');
+  if (!input) return;
+  const searchText = input.value.toLowerCase();
+  
   if (!blogIndexData.length) return;
   const filtered = blogIndexData.filter(p => 
     p.title.toLowerCase().includes(searchText) || 
@@ -651,7 +688,9 @@ function filterBlogs() {
 
 function openBlogPost(id) {
   document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-  document.getElementById('page-blog-detail').classList.add('active');
+  const detailPage = document.getElementById('page-blog-detail');
+  if (detailPage) detailPage.classList.add('active');
+  
   window.scrollTo(0, 0);
   loadBlogPost(id);
 }
@@ -665,13 +704,18 @@ let currentDownloadUrl = '';
 
 function openModal(name, url) {
   currentDownloadUrl = url;
-  document.getElementById('modalResourceName').innerText = name;
-  document.getElementById('modalUrlBox').innerText = url;
-  document.getElementById('downloadModal').classList.add('active');
+  const modal = document.getElementById('downloadModal');
+  const nameEl = document.getElementById('modalResourceName');
+  const urlEl = document.getElementById('modalUrlBox');
+  
+  if (nameEl) nameEl.innerText = name;
+  if (urlEl) urlEl.innerText = url;
+  if (modal) modal.classList.add('active');
 }
 
 function closeModal() {
-  document.getElementById('downloadModal').classList.remove('active');
+  const modal = document.getElementById('downloadModal');
+  if (modal) modal.classList.remove('active');
 }
 
 function confirmDownload() {
@@ -690,6 +734,17 @@ function renderMath() {
           {left: '$', right: '$', display: false}
         ]
       });
+      
+      // Force centering for display math that might be wrapped in <p> tags
+      // This runs after KaTeX has rendered the DOM
+      document.querySelectorAll('.katex-display').forEach(el => {
+          const parent = el.parentElement;
+          if (parent && parent.tagName === 'P') {
+              parent.style.textAlign = 'center';
+              parent.style.textIndent = '0';
+          }
+      });
+
     } catch(e) {
         console.error("KaTeX rendering error", e);
     }
@@ -702,7 +757,8 @@ function toggleTheme() {
 }
 
 function closeMobileMenu() {
-  document.getElementById('mobileMenu').classList.remove('active');
+  const menu = document.getElementById('mobileMenu');
+  if (menu) menu.classList.remove('active');
 }
 
 // --- INITIALIZATION ---
@@ -719,11 +775,20 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // 2. Event Listeners (Crucial for buttons)
   try {
-    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-    document.getElementById('themeToggleMobile').addEventListener('click', toggleTheme);
-    document.getElementById('mobileMenuBtn').addEventListener('click', () => document.getElementById('mobileMenu').classList.add('active'));
-    document.getElementById('closeMobileMenu').addEventListener('click', closeMobileMenu);
-    document.getElementById('downloadModal').addEventListener('click', (e) => {
+    const themeToggle = document.getElementById('themeToggle');
+    const themeToggleMobile = document.getElementById('themeToggleMobile');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const closeMobileMenuBtn = document.getElementById('closeMobileMenu');
+    const downloadModal = document.getElementById('downloadModal');
+
+    if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
+    if (themeToggleMobile) themeToggleMobile.addEventListener('click', toggleTheme);
+    if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', () => {
+        const menu = document.getElementById('mobileMenu');
+        if (menu) menu.classList.add('active');
+    });
+    if (closeMobileMenuBtn) closeMobileMenuBtn.addEventListener('click', closeMobileMenu);
+    if (downloadModal) downloadModal.addEventListener('click', (e) => {
       if (e.target.id === 'downloadModal') closeModal();
     });
   } catch (e) {
