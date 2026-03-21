@@ -140,22 +140,28 @@ body {
   margin-top: 0.5rem;
 }
 
-/* KaTeX Fixes */
+/* KaTeX Fixes - CRITICAL CENTERING FIX */
 .katex { font-size: 1.1em; }
+
+/* 1. Ensure the display container centers its content */
 .katex-display { 
   display: block; 
+  text-align: center; 
   margin: 1.5rem 0; 
   overflow-x: auto; 
   overflow-y: hidden;
-  text-align: center; /* Center block math */
 }
-/* Prevent <p> tags around block math from messing up layout */
+
+/* 2. If KaTeX is wrapped inside a <p> tag (common in Markdown), center the <p> */
+.markdown-content p:has(> .katex-display) {
+  text-indent: 0;
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+/* 3. Reset margins for nested structure to avoid double spacing */
 .markdown-content p > .katex-display {
   margin: 0;
-}
-/* Fix for inline math inside paragraphs */
-.markdown-content p .katex {
-  display: inline;
 }
 
 .dark .katex { color: var(--text-primary); }
@@ -251,7 +257,7 @@ body {
     </div>
   </div>
 
-  <!-- NOTICE DETAIL PAGE (New) -->
+  <!-- NOTICE DETAIL PAGE -->
   <div id="page-notice-detail" class="page">
     <div class="mb-6">
       <button onclick="backToNoticesList()" class="btn-outline rounded text-sm">
@@ -360,46 +366,54 @@ const DATA_PATH = './data/';
 let siteConfig = {};
 let papersData = [];
 let blogIndexData = [];
-let noticesData = []; // Added for caching
+let noticesData = []; 
 
-// --- MARKDOWN PARSER SETUP ---
-
+// --- MARKDOWN PARSER SETUP (Safe Version) ---
 function parseMarkdown(text) {
+    // 1. Safety Check for Marked Library
+    if (typeof marked === 'undefined') {
+        console.error("Marked library is not loaded.");
+        return text ? String(text).replace(/</g, "&lt;").replace(/>/g, "&gt;") : ""; // Escape HTML if no library
+    }
+    
     if (!text) return "";
     
-    // 1. Store Math Blocks
-    let mathBlocks = [];
-    
-    // Extract display math ($$...$$) first
-    text = text.replace(/\$\$([\s\S]+?)\$\$/g, (match, p1) => {
-        mathBlocks.push({ type: 'display', math: p1 });
-        return `MATHBLOCK${mathBlocks.length - 1}ENDBLOCK`;
-    });
+    try {
+        let tempText = String(text);
+        let mathBlocks = [];
+        
+        // Extract display math ($$...$$) first
+        tempText = tempText.replace(/\$\$([\s\S]+?)\$\$/g, (match, p1) => {
+            mathBlocks.push({ type: 'display', math: p1 });
+            return `MATHBLOCK${mathBlocks.length - 1}ENDBLOCK`;
+        });
 
-    // Extract inline math ($...$)
-    text = text.replace(/\$([^\$\n]+?)\$/g, (match, p1) => {
-        mathBlocks.push({ type: 'inline', math: p1 });
-        return `MATHBLOCK${mathBlocks.length - 1}ENDBLOCK`;
-    });
+        // Extract inline math ($...$)
+        tempText = tempText.replace(/\$([^\$\n]+?)\$/g, (match, p1) => {
+            mathBlocks.push({ type: 'inline', math: p1 });
+            return `MATHBLOCK${mathBlocks.length - 1}ENDBLOCK`;
+        });
 
-    // 2. Parse Markdown
-    let html = marked.parse(text, { breaks: true, gfm: true });
+        // 2. Parse Markdown
+        let html = marked.parse(tempText, { breaks: true, gfm: true });
 
-    // 3. Restore Math Blocks
-    mathBlocks.forEach((block, index) => {
-        const placeholder = `MATHBLOCK${index}ENDBLOCK`;
-        // Important: Unwrap <p> tags around display math
-        if (block.type === 'display') {
-            // Replace cases where marked wraps the placeholder in a <p> tag
-            html = html.replace(new RegExp(`<p>${placeholder}</p>`, 'g'), `$$${block.math}$$`);
-            // Also handle raw replacement just in case
-            html = html.replace(new RegExp(placeholder, 'g'), `$$${block.math}$$`);
-        } else {
-            html = html.replace(new RegExp(placeholder, 'g'), `$${block.math}$`);
-        }
-    });
+        // 3. Restore Math Blocks
+        mathBlocks.forEach((block, index) => {
+            const placeholder = `MATHBLOCK${index}ENDBLOCK`;
+            if (block.type === 'display') {
+                // Robust Regex: Match <p> tags with optional whitespace around the placeholder
+                html = html.replace(new RegExp(`<p>\\s*${placeholder}\\s*</p>`, 'g'), `$$${block.math}$$`);
+                html = html.replace(new RegExp(placeholder, 'g'), `$$${block.math}$$`);
+            } else {
+                html = html.replace(new RegExp(placeholder, 'g'), `$${block.math}$`);
+            }
+        });
 
-    return html;
+        return html;
+    } catch (e) {
+        console.error("Error parsing markdown:", e);
+        return "<div style='text-align:center; color:#dc2626;'>内容解析错误</div>";
+    }
 }
 
 // --- DATA LOADERS ---
@@ -407,6 +421,7 @@ function parseMarkdown(text) {
 async function loadConfig() {
   try {
     const res = await fetch(DATA_PATH + 'config.json');
+    if (!res.ok) throw new Error(`HTTP status ${res.status}`);
     siteConfig = await res.json();
     document.getElementById('navTitle').innerText = siteConfig.title.split(' - ')[0];
     document.getElementById('homeTitle').innerText = siteConfig.title.split(' - ')[1] || siteConfig.title;
@@ -422,11 +437,14 @@ async function loadAbout() {
   const container = document.getElementById('aboutContent');
   try {
     const res = await fetch(DATA_PATH + 'about.json');
+    if (!res.ok) throw new Error(`HTTP status ${res.status}`);
     const data = await res.json();
     container.innerHTML = parseMarkdown(data.content);
     renderMath();
   } catch (e) {
-    container.innerHTML = "<p class='text-center text-red-600'>加载简介失败</p>";
+    console.error(e);
+    // Use div and inline styles to ensure centering
+    container.innerHTML = "<div style='text-align: center; color: #dc2626; padding: 2rem 0;'>加载简介失败</div>";
   }
 }
 
@@ -435,7 +453,8 @@ async function loadNotices() {
   const homeContainer = document.getElementById('homeNotices');
   try {
     const res = await fetch(DATA_PATH + 'notices.json');
-    noticesData = await res.json(); // Cache data
+    if (!res.ok) throw new Error(`HTTP status ${res.status}`);
+    noticesData = await res.json(); 
     
     // Render Full List
     container.innerHTML = noticesData.map(n => `
@@ -459,14 +478,18 @@ async function loadNotices() {
     }
     renderMath();
   } catch (e) {
-    container.innerHTML = "<p class='text-center text-red-600'>加载通知失败</p>";
+    console.error(e);
+    container.innerHTML = "<div style='text-align: center; color: #dc2626; padding: 2rem 0;'>加载通知失败</div>";
     homeContainer.innerHTML = "";
   }
 }
 
 function openNoticeDetail(id) {
     const notice = noticesData.find(n => n.id === id);
-    if (!notice) return;
+    if (!notice) {
+        alert("通知内容未找到");
+        return;
+    }
 
     const container = document.getElementById('noticeDetailContent');
     container.innerHTML = `
@@ -477,7 +500,6 @@ function openNoticeDetail(id) {
         ${parseMarkdown(notice.content)}
     `;
     
-    // Switch view
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
     document.getElementById('page-notice-detail').classList.add('active');
     window.scrollTo(0, 0);
@@ -492,10 +514,12 @@ async function loadPapers() {
   const tbody = document.getElementById('papersTable');
   try {
     const res = await fetch(DATA_PATH + 'papers.json');
+    if (!res.ok) throw new Error(`HTTP status ${res.status}`);
     papersData = await res.json();
     renderPapers(papersData);
   } catch (e) {
-    tbody.innerHTML = "<tr><td colspan='4' class='text-center text-red-600 p-5'>加载试卷列表失败</td></tr>";
+    console.error(e);
+    tbody.innerHTML = "<tr><td colspan='4' style='text-align: center; color: #dc2626; padding: 2rem 0;'>加载试卷列表失败</td></tr>";
   }
 }
 
@@ -503,10 +527,12 @@ async function loadBlogIndex() {
   const container = document.getElementById('blogList');
   try {
     const res = await fetch(DATA_PATH + 'blog/index.json');
+    if (!res.ok) throw new Error(`HTTP status ${res.status}`);
     blogIndexData = await res.json();
     renderBlogList(blogIndexData);
   } catch (e) {
-    container.innerHTML = "<p class='text-center text-red-600'>加载博客列表失败</p>";
+    console.error(e);
+    container.innerHTML = "<div style='text-align: center; color: #dc2626; padding: 2rem 0;'>加载博客列表失败</div>";
   }
 }
 
@@ -517,6 +543,7 @@ async function loadBlogPost(id) {
   try {
     const meta = blogIndexData.find(p => p.id === id);
     const res = await fetch(`${DATA_PATH}blog/posts/${id}.json`);
+    if (!res.ok) throw new Error(`HTTP status ${res.status}`);
     const data = await res.json();
     
     container.innerHTML = `
@@ -527,7 +554,8 @@ async function loadBlogPost(id) {
     `;
     renderMath();
   } catch (e) {
-    container.innerHTML = "<p class='text-center text-red-600'>加载文章内容失败</p>";
+    console.error(e);
+    container.innerHTML = "<div style='text-align: center; color: #dc2626; padding: 2rem 0;'>加载文章内容失败</div>";
   }
 }
 
@@ -537,7 +565,7 @@ function renderPapers(data) {
   const tbody = document.getElementById('papersTable');
   const noResult = document.getElementById('noPapersResult');
   
-  if (data.length === 0) {
+  if (!data || data.length === 0) {
     tbody.innerHTML = '';
     noResult.classList.remove('hidden');
     return;
@@ -567,7 +595,7 @@ function renderBlogList(data) {
   const container = document.getElementById('blogList');
   const noResult = document.getElementById('noBlogResult');
   
-  if (data.length === 0) {
+  if (!data || data.length === 0) {
     container.innerHTML = '';
     noResult.classList.remove('hidden');
     return;
@@ -655,12 +683,16 @@ function confirmDownload() {
 
 function renderMath() {
   if (typeof renderMathInElement === 'function') {
-    renderMathInElement(document.body, {
-      delimiters: [
-        {left: '$$', right: '$$', display: true},
-        {left: '$', right: '$', display: false}
-      ]
-    });
+    try {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ]
+      });
+    } catch(e) {
+        console.error("KaTeX rendering error", e);
+    }
   }
 }
 
@@ -676,18 +708,29 @@ function closeMobileMenu() {
 // --- INITIALIZATION ---
 
 document.addEventListener('DOMContentLoaded', () => {
-  if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-    document.documentElement.classList.add('dark');
+  // 1. Theme Init (Safe)
+  try {
+    if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+  } catch (e) {
+      console.error("Theme init failed", e);
   }
   
-  document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-  document.getElementById('themeToggleMobile').addEventListener('click', toggleTheme);
-  document.getElementById('mobileMenuBtn').addEventListener('click', () => document.getElementById('mobileMenu').classList.add('active'));
-  document.getElementById('closeMobileMenu').addEventListener('click', closeMobileMenu);
-  document.getElementById('downloadModal').addEventListener('click', (e) => {
-    if (e.target.id === 'downloadModal') closeModal();
-  });
+  // 2. Event Listeners (Crucial for buttons)
+  try {
+    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+    document.getElementById('themeToggleMobile').addEventListener('click', toggleTheme);
+    document.getElementById('mobileMenuBtn').addEventListener('click', () => document.getElementById('mobileMenu').classList.add('active'));
+    document.getElementById('closeMobileMenu').addEventListener('click', closeMobileMenu);
+    document.getElementById('downloadModal').addEventListener('click', (e) => {
+      if (e.target.id === 'downloadModal') closeModal();
+    });
+  } catch (e) {
+      console.error("Failed to attach event listeners", e);
+  }
   
+  // 3. Initial Data Load (Async, non-blocking)
   loadConfig();
   loadNotices(); 
 });
