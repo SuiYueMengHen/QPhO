@@ -105,17 +105,15 @@ body {
 .page.active { display: block; opacity: 1; transform: translateY(0); }
 
 /* Markdown Content Styles */
-/* We apply .markdown-content to containers that will hold parsed MD */
 .markdown-content h1 { font-size: 1.75rem; font-weight: 600; margin-top: 2rem; margin-bottom: 1rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--border); }
 .markdown-content h2 { font-size: 1.4rem; font-weight: 500; margin-top: 1.8rem; margin-bottom: 0.8rem; }
 .markdown-content h3 { font-size: 1.2rem; font-weight: 500; margin-top: 1.5rem; margin-bottom: 0.6rem; }
 .markdown-content p { text-indent: 2em; text-align: justify; margin-bottom: 1em; line-height: 1.8; }
 .markdown-content ul, .markdown-content ol { margin-left: 2em; margin-bottom: 1em; }
 .markdown-content li { margin-bottom: 0.3em; }
-.markdown-content blockquote { border-left: 3px solid var(--accent); padding-left: 1.5rem; margin: 1.5rem 0; font-style: italic; color: var(--text-secondary); }
 .markdown-content code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background-color: var(--bg-secondary); padding: 0.15em 0.4em; border-radius: 3px; }
 .markdown-content pre { background-color: var(--bg-secondary); padding: 1rem; border-radius: 4px; overflow-x: auto; margin: 1.5rem 0; border: 1px solid var(--border); }
-.markdown-content pre code { background: none; padding: 0; }
+.markdown-content pre code { background: none; padding: 0; text-indent: 0; }
 .markdown-content a { color: var(--link); text-decoration: none; border-bottom: 1px solid transparent; }
 .markdown-content a:hover { border-bottom-color: var(--link); }
 .markdown-content table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
@@ -123,17 +121,51 @@ body {
 .markdown-content th { background-color: var(--bg-secondary); font-weight: 600; }
 .markdown-content strong { font-weight: 600; }
 
+/* Blockquote Specific Styles */
+.markdown-content blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 1.5rem;
+  margin: 1.5rem 0;
+  color: var(--text-secondary);
+}
+.markdown-content blockquote p {
+  text-indent: 0; /* No indent for quotes */
+  margin-bottom: 0.5rem;
+  text-align: left; /* Default left for quote text */
+}
+/* Align the last paragraph (signature) to the right */
+.markdown-content blockquote p:last-child {
+  text-align: right;
+  font-style: normal; /* Normal style for name */
+  margin-top: 0.5rem;
+}
+
+/* KaTeX Fixes */
+.katex { font-size: 1.1em; }
+.katex-display { 
+  display: block; 
+  margin: 1.5rem 0; 
+  overflow-x: auto; 
+  overflow-y: hidden;
+  text-align: center; /* Center block math */
+}
+/* Prevent <p> tags around block math from messing up layout */
+.markdown-content p > .katex-display {
+  margin: 0;
+}
+/* Fix for inline math inside paragraphs */
+.markdown-content p .katex {
+  display: inline;
+}
+
+.dark .katex { color: var(--text-primary); }
+
 /* Theme Toggle */
 .theme-toggle { width: 44px; height: 24px; background-color: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; position: relative; cursor: pointer; transition: all 0.3s ease; }
 .theme-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background-color: var(--accent); border-radius: 50%; transition: transform 0.3s ease; }
 .dark .theme-toggle::after { transform: translateX(20px); }
 
 .footnote { font-size: 0.85rem; color: var(--text-secondary); border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 3rem; }
-
-/* KaTeX */
-.katex { font-size: 1.1em; }
-.katex-display { margin: 1em 0; overflow-x: auto; overflow-y: hidden; }
-.dark .katex { color: var(--text-primary); }
 
 /* Loading Spinner */
 .loading-spinner { display: inline-block; width: 1rem; height: 1rem; border: 2px solid var(--border); border-radius: 50%; border-top-color: var(--accent); animation: spin 1s ease-in-out infinite; }
@@ -217,6 +249,20 @@ body {
     <div id="noticesList" class="space-y-4">
       <div class="text-center p-10"><div class="loading-spinner"></div></div>
     </div>
+  </div>
+
+  <!-- NOTICE DETAIL PAGE (New) -->
+  <div id="page-notice-detail" class="page">
+    <div class="mb-6">
+      <button onclick="backToNoticesList()" class="btn-outline rounded text-sm">
+        <i class="fas fa-arrow-left mr-2"></i>返回通知列表
+      </button>
+    </div>
+    <article class="paper-card rounded-lg p-6">
+      <div id="noticeDetailContent" class="markdown-content">
+        <div class="text-center p-10"><div class="loading-spinner"></div></div>
+      </div>
+    </article>
   </div>
 
   <!-- PAPERS PAGE -->
@@ -314,41 +360,42 @@ const DATA_PATH = './data/';
 let siteConfig = {};
 let papersData = [];
 let blogIndexData = [];
+let noticesData = []; // Added for caching
 
 // --- MARKDOWN PARSER SETUP ---
 
-// Custom function to parse Markdown while preserving LaTeX
 function parseMarkdown(text) {
     if (!text) return "";
     
-    // 1. Store Math Blocks to prevent Markdown parsing inside them
+    // 1. Store Math Blocks
     let mathBlocks = [];
     
-    // Extract display math ($$...$$)
+    // Extract display math ($$...$$) first
     text = text.replace(/\$\$([\s\S]+?)\$\$/g, (match, p1) => {
         mathBlocks.push({ type: 'display', math: p1 });
         return `MATHBLOCK${mathBlocks.length - 1}ENDBLOCK`;
     });
 
     // Extract inline math ($...$)
-    // We use a cautious regex to avoid matching currency like $5
-    // Assumes math formulas contain letters, operators, or brackets
     text = text.replace(/\$([^\$\n]+?)\$/g, (match, p1) => {
         mathBlocks.push({ type: 'inline', math: p1 });
         return `MATHBLOCK${mathBlocks.length - 1}ENDBLOCK`;
     });
 
-    // 2. Parse Markdown using marked
-    // Set breaks: true to handle single line breaks as <br>
+    // 2. Parse Markdown
     let html = marked.parse(text, { breaks: true, gfm: true });
 
     // 3. Restore Math Blocks
     mathBlocks.forEach((block, index) => {
         const placeholder = `MATHBLOCK${index}ENDBLOCK`;
+        // Important: Unwrap <p> tags around display math
         if (block.type === 'display') {
-            html = html.replace(placeholder, `$$${block.math}$$`);
+            // Replace cases where marked wraps the placeholder in a <p> tag
+            html = html.replace(new RegExp(`<p>${placeholder}</p>`, 'g'), `$$${block.math}$$`);
+            // Also handle raw replacement just in case
+            html = html.replace(new RegExp(placeholder, 'g'), `$$${block.math}$$`);
         } else {
-            html = html.replace(placeholder, `$${block.math}$`);
+            html = html.replace(new RegExp(placeholder, 'g'), `$${block.math}$`);
         }
     });
 
@@ -388,20 +435,20 @@ async function loadNotices() {
   const homeContainer = document.getElementById('homeNotices');
   try {
     const res = await fetch(DATA_PATH + 'notices.json');
-    const data = await res.json();
+    noticesData = await res.json(); // Cache data
     
     // Render Full List
-    container.innerHTML = data.map(n => `
-      <article class="paper-card rounded-lg p-5 cursor-pointer" onclick="showNoticeDetail('${n.id}', '${n.title}', '${n.date}')">
+    container.innerHTML = noticesData.map(n => `
+      <article class="paper-card rounded-lg p-5 cursor-pointer" onclick="openNoticeDetail('${n.id}')">
         <span class="text-xs font-mono" style="color: var(--accent);">${n.date}</span>
         <h3 class="text-lg font-medium mt-1 mb-2" style="color: var(--text-primary);">${n.title}</h3>
         <div class="text-sm" style="color: var(--text-secondary);">${parseMarkdown(n.summary)}</div>
       </article>
     `).join('');
 
-    // Render Home Summary (Top 1)
-    if (data.length > 0) {
-       const latest = data[0];
+    // Render Home Summary
+    if (noticesData.length > 0) {
+       const latest = noticesData[0];
        homeContainer.innerHTML = `
         <article class="paper-card rounded-lg p-5 cursor-pointer" onclick="navigateTo('notices')">
           <span class="text-xs font-mono" style="color: var(--accent);">${latest.date}</span>
@@ -417,13 +464,28 @@ async function loadNotices() {
   }
 }
 
-// Simple alert for notice detail since we don't have a dedicated detail page structure for notices in this design
-function showNoticeDetail(id, title, date) {
-    // Ideally, we might want a modal or a separate page, but for now, we can load the content dynamically.
-    // Let's implement a simple modal alert or just log it.
-    // For better UX, let's reuse the download modal structure or create a simple alert.
-    alert(`查看通知详情：${title}\n\n请在此处加载完整 Markdown 内容。`);
-    // In a real app, you would fetch the specific notice content and display it.
+function openNoticeDetail(id) {
+    const notice = noticesData.find(n => n.id === id);
+    if (!notice) return;
+
+    const container = document.getElementById('noticeDetailContent');
+    container.innerHTML = `
+        <h1>${notice.title}</h1>
+        <p style="text-indent: 0; font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+            <span class="font-mono">${notice.date}</span>
+        </p>
+        ${parseMarkdown(notice.content)}
+    `;
+    
+    // Switch view
+    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+    document.getElementById('page-notice-detail').classList.add('active');
+    window.scrollTo(0, 0);
+    renderMath();
+}
+
+function backToNoticesList() {
+    navigateTo('notices');
 }
 
 async function loadPapers() {
