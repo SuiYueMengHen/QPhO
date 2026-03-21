@@ -1,0 +1,4 @@
+[
+  { "year": "2024", "p": { "name": "初赛试卷", "url": "https://example.com/2024_preliminary.pdf" }, "pa": { "name": "初赛答案", "url": "https://example.com/2024_preliminary_ans.pdf" }, "s": { "name": "复赛试卷", "url": "https://example.com/2024_semifinal.pdf" }, "sa": { "name": "复赛答案", "url": "https://example.com/2024_semifinal_ans.pdf" }, "f": { "name": "决赛试卷", "url": "https://example.com/2024_final.pdf" }, "fa": { "name": "决赛答案", "url": "https://example.com/2024_final_ans.pdf" } },
+  { "year": "2023", "p": { "name": "初赛试卷", "url": "https://example.com/2023_preliminary.pdf" }, "pa": { "name": "初赛答案", "url": "https://example.com/2023_preliminary_ans.pdf" }, "s": { "name": "复赛试卷", "url": "https://example.com/2023_semifinal.pdf" }, "sa": { "name": "复赛答案", "url": "https://example.com/2023_semifinal_ans.pdf" }, "f": { "name": "决赛试卷", "url": "https://example.com/2023_final.pdf" }, "fa": { "name": "决赛答案", "url": "https://example.com/2023_final_ans.pdf" } }
+]
