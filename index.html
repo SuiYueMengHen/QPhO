@@ -1,804 +1,886 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QPhO - Quantum Physics Olympiad</title>
-<script src="https://cdn.tailwindcss.com"></script>
-
-<!-- Markdown Parser -->
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-<!-- KaTeX CSS & JS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-
-<script>
-tailwind.config = {
-  darkMode: 'class',
-  theme: {
-    extend: {
-      fontFamily: {
-        serif: ['Crimson Pro', 'Georgia', 'serif'],
-        mono: ['JetBrains Mono', 'monospace'],
-      }
-    }
-  }
-}
-</script>
-<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-:root {
-  --bg-primary: #FFFEF9;
-  --bg-secondary: #F8F6F1;
-  --text-primary: #1a1a1a;
-  --text-secondary: #5c5c5c;
-  --accent: #8B0000;
-  --link: #0066CC;
-  --border: #d4d0c8;
-}
-
-.dark {
-  --bg-primary: #0d0d0d;
-  --bg-secondary: #161616;
-  --text-primary: #e8e6e3;
-  --text-secondary: #9a9a9a;
-  --accent: #c44d4d;
-  --link: #6ba3d6;
-  --border: #2a2a2a;
-}
-
-* { scrollbar-width: thin; scrollbar-color: var(--text-secondary) transparent; }
-html { scroll-behavior: smooth; }
-body {
-  font-family: 'Crimson Pro', Georgia, serif;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  transition: background-color 0.4s ease, color 0.4s ease;
-  line-height: 1.8;
-  font-size: 1.125rem;
-  min-height: 100vh;
-}
-
-/* LaTeX-style Typography */
-.latex-title { font-size: 2.5rem; font-weight: 400; letter-spacing: -0.02em; line-height: 1.2; }
-.latex-section { font-size: 1.5rem; font-weight: 600; margin-top: 2rem; margin-bottom: 1rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--border); }
-.latex-link { color: var(--link); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.2s ease; cursor: pointer; }
-.latex-link:hover { border-bottom-color: var(--link); }
-
-/* Navigation */
-.nav-container { background-color: var(--bg-primary); border-bottom: 1px solid var(--border); transition: background-color 0.4s ease, border-color 0.4s ease; }
-.nav-link { position: relative; color: var(--text-secondary); transition: color 0.2s ease; padding-bottom: 2px; }
-.nav-link.active { color: var(--text-primary); font-weight: 600; }
-.nav-link::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 1px; background-color: var(--accent); transition: width 0.3s ease; }
-.nav-link:hover::after, .nav-link.active::after { width: 100%; }
-
-/* Cards */
-.paper-card { background-color: var(--bg-secondary); border: 1px solid var(--border); transition: all 0.3s ease; }
-.paper-card:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-.dark .paper-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-
-/* Buttons */
-.btn-primary { background-color: var(--accent); color: #fff; padding: 0.5rem 1.5rem; font-size: 0.95rem; letter-spacing: 0.02em; transition: all 0.2s ease; }
-.btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
-.btn-outline { border: 1px solid var(--border); color: var(--text-primary); padding: 0.5rem 1.5rem; font-size: 0.95rem; transition: all 0.2s ease; }
-.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
-.latex-action-btn { background-color: transparent; border: 1px solid var(--border); color: var(--text-primary); padding: 0.25rem 0.75rem; font-family: 'Crimson Pro', serif; font-size: 0.9rem; cursor: pointer; transition: all 0.2s ease; }
-.latex-action-btn:hover { background-color: var(--text-primary); color: var(--bg-primary); border-color: var(--text-primary); }
-
-/* Search Input */
-.search-input { background-color: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-primary); padding: 0.5rem 1rem; font-family: 'Crimson Pro', serif; width: 100%; transition: all 0.2s ease; }
-.search-input:focus { outline: none; border-color: var(--accent); }
-.search-input::placeholder { color: var(--text-secondary); }
-
-/* Modal */
-.modal-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
-.modal-overlay.active { opacity: 1; visibility: visible; }
-.modal-box { background-color: var(--bg-primary); border: 1px solid var(--text-primary); padding: 2rem; max-width: 500px; width: 90%; position: relative; transform: translateY(20px); transition: transform 0.3s ease; box-shadow: 5px 5px 0px var(--border); }
-.modal-overlay.active .modal-box { transform: translateY(0); }
-.modal-url-box { background-color: var(--bg-secondary); border: 1px solid var(--border); padding: 0.75rem; margin: 1rem 0; word-break: break-all; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-secondary); }
-
-/* Page Transitions */
-.page { display: none; opacity: 0; transform: translateY(10px); transition: opacity 0.4s ease, transform 0.4s ease; }
-.page.active { display: block; opacity: 1; transform: translateY(0); }
-
-/* Markdown Content Styles */
-.markdown-content h1 { font-size: 1.75rem; font-weight: 600; margin-top: 2rem; margin-bottom: 1rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--border); }
-.markdown-content h2 { font-size: 1.4rem; font-weight: 500; margin-top: 1.8rem; margin-bottom: 0.8rem; }
-.markdown-content h3 { font-size: 1.2rem; font-weight: 500; margin-top: 1.5rem; margin-bottom: 0.6rem; }
-.markdown-content p { text-indent: 2em; text-align: justify; margin-bottom: 1em; line-height: 1.8; }
-.markdown-content ul, .markdown-content ol { margin-left: 2em; margin-bottom: 1em; }
-.markdown-content li { margin-bottom: 0.3em; }
-.markdown-content code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background-color: var(--bg-secondary); padding: 0.15em 0.4em; border-radius: 3px; }
-.markdown-content pre { background-color: var(--bg-secondary); padding: 1rem; border-radius: 4px; overflow-x: auto; margin: 1.5rem 0; border: 1px solid var(--border); }
-.markdown-content pre code { background: none; padding: 0; text-indent: 0; }
-.markdown-content a { color: var(--link); text-decoration: none; border-bottom: 1px solid transparent; }
-.markdown-content a:hover { border-bottom-color: var(--link); }
-.markdown-content table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
-.markdown-content th, .markdown-content td { border: 1px solid var(--border); padding: 0.6rem 1rem; text-align: left; }
-.markdown-content th { background-color: var(--bg-secondary); font-weight: 600; }
-.markdown-content strong { font-weight: 600; }
-
-/* Blockquote Specific Styles */
-.markdown-content blockquote {
-  border-left: 3px solid var(--accent);
-  padding-left: 1.5rem;
-  margin: 1.5rem 0;
-  color: var(--text-secondary);
-}
-.markdown-content blockquote p {
-  text-indent: 0; /* No indent for quotes */
-  margin-bottom: 0.5rem;
-  text-align: left; /* Default left for quote text */
-}
-/* Align the last paragraph (signature) to the right */
-.markdown-content blockquote p:last-child {
-  text-align: right;
-  font-style: normal; /* Normal style for name */
-  margin-top: 0.5rem;
-}
-
-/* KaTeX Fixes - CRITICAL CENTERING FIX */
-.katex { font-size: 1.1em; }
-
-/* 1. Ensure the display container centers its content */
-.katex-display { 
-  display: block; 
-  text-align: center; 
-  margin: 1.5rem 0; 
-  overflow-x: auto; 
-  overflow-y: hidden;
-}
-
-/* 2. If KaTeX is wrapped inside a <p> tag (common in Markdown), center the <p> */
-.markdown-content p:has(> .katex-display) {
-  text-indent: 0;
-  text-align: center;
-  margin: 1.5rem 0;
-}
-
-/* 3. Reset margins for nested structure to avoid double spacing */
-.markdown-content p > .katex-display {
-  margin: 0;
-}
-
-.dark .katex { color: var(--text-primary); }
-
-/* Theme Toggle */
-.theme-toggle { width: 44px; height: 24px; background-color: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; position: relative; cursor: pointer; transition: all 0.3s ease; }
-.theme-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background-color: var(--accent); border-radius: 50%; transition: transform 0.3s ease; }
-.dark .theme-toggle::after { transform: translateX(20px); }
-
-.footnote { font-size: 0.85rem; color: var(--text-secondary); border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 3rem; }
-
-/* Loading Spinner */
-.loading-spinner { display: inline-block; width: 1rem; height: 1rem; border: 2px solid var(--border); border-radius: 50%; border-top-color: var(--accent); animation: spin 1s ease-in-out infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-</style>
-</head>
-<body>
-
-<!-- Navigation -->
-<nav class="fixed top-0 left-0 right-0 z-50 backdrop-blur-sm nav-container">
-  <div class="max-w-5xl mx-auto px-6 py-4">
-    <div class="flex items-center justify-between">
-      <a href="#" onclick="navigateTo('home')" class="latex-title text-xl" style="color: var(--text-primary);" id="navTitle">QPhO</a>
-      
-      <div class="hidden md:flex items-center space-x-8">
-        <a href="#" onclick="navigateTo('home')" class="nav-link text-base" data-page="home">首页</a>
-        <a href="#" onclick="navigateTo('about')" class="nav-link text-base" data-page="about">简介</a>
-        <a href="#" onclick="navigateTo('notices')" class="nav-link text-base" data-page="notices">通知</a>
-        <a href="#" onclick="navigateTo('papers')" class="nav-link text-base" data-page="papers">试卷</a>
-        <a href="#" onclick="navigateTo('blog')" class="nav-link text-base" data-page="blog">博客</a>
-        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"></button>
-      </div>
-      
-      <button class="md:hidden p-2" id="mobileMenuBtn" aria-label="Menu">
-        <i class="fas fa-bars text-lg" style="color: var(--text-primary);"></i>
-      </button>
-    </div>
-  </div>
-</nav>
-
-<!-- Mobile Menu -->
-<div class="mobile-menu fixed inset-0 z-40 md:hidden" style="background-color: var(--bg-primary);" id="mobileMenu">
-  <div class="flex flex-col items-center justify-center h-full space-y-8">
-    <a href="#" onclick="navigateTo('home'); closeMobileMenu();" class="text-2xl nav-link">首页</a>
-    <a href="#" onclick="navigateTo('about'); closeMobileMenu();" class="text-2xl nav-link">简介</a>
-    <a href="#" onclick="navigateTo('notices'); closeMobileMenu();" class="text-2xl nav-link">通知</a>
-    <a href="#" onclick="navigateTo('papers'); closeMobileMenu();" class="text-2xl nav-link">试卷</a>
-    <a href="#" onclick="navigateTo('blog'); closeMobileMenu();" class="text-2xl nav-link">博客</a>
-    <button class="theme-toggle mt-4" id="themeToggleMobile" aria-label="Toggle theme"></button>
-  </div>
-  <button class="absolute top-4 right-6 p-2" id="closeMobileMenu" aria-label="Close menu">
-    <i class="fas fa-times text-xl" style="color: var(--text-primary);"></i>
-  </button>
-</div>
-
-<!-- Main Content Container -->
-<main class="max-w-3xl mx-auto px-6 pt-24 pb-16 min-h-screen">
-
-  <!-- HOME PAGE -->
-  <div id="page-home" class="page active">
-    <section class="mb-16">
-      <div class="text-center mb-12">
-        <h1 class="latex-title text-4xl md:text-5xl mb-4" style="color: var(--text-primary);" id="homeTitle">Quantum Physics Olympiad</h1>
-        <p class="text-lg" style="color: var(--text-secondary); font-style: italic;" id="homeSubtitle">探索量子世界的奥秘</p>
-      </div>
-      <div class="flex justify-center space-x-4">
-        <button onclick="navigateTo('about')" class="btn-primary rounded">了解更多</button>
-        <button onclick="navigateTo('papers')" class="btn-outline rounded">历年试卷</button>
-      </div>
-    </section>
-    
-    <section class="mb-16">
-      <h2 class="latex-section">最新动态</h2>
-      <div id="homeNotices" class="space-y-4">
-        <div class="text-center p-5"><div class="loading-spinner"></div></div>
-      </div>
-    </section>
-  </div>
-
-  <!-- ABOUT PAGE -->
-  <div id="page-about" class="page">
-    <h2 class="latex-section">竞赛简介</h2>
-    <div id="aboutContent" class="markdown-content">
-      <div class="text-center p-10"><div class="loading-spinner"></div></div>
-    </div>
-  </div>
-
-  <!-- NOTICES PAGE -->
-  <div id="page-notices" class="page">
-    <h2 class="latex-section">竞赛通知</h2>
-    <div id="noticesList" class="space-y-4">
-      <div class="text-center p-10"><div class="loading-spinner"></div></div>
-    </div>
-  </div>
-
-  <!-- NOTICE DETAIL PAGE -->
-  <div id="page-notice-detail" class="page">
-    <div class="mb-6">
-      <button onclick="backToNoticesList()" class="btn-outline rounded text-sm">
-        <i class="fas fa-arrow-left mr-2"></i>返回通知列表
-      </button>
-    </div>
-    <article class="paper-card rounded-lg p-6">
-      <div id="noticeDetailContent" class="markdown-content">
-        <div class="text-center p-10"><div class="loading-spinner"></div></div>
-      </div>
-    </article>
-  </div>
-
-  <!-- PAPERS PAGE -->
-  <div id="page-papers" class="page">
-    <h2 class="latex-section">试卷下载</h2>
-    
-    <div class="flex gap-2 mb-6 mt-4">
-      <input type="text" id="paperSearch" class="search-input rounded flex-1" placeholder="输入年份搜索试卷 (例如: 2024)" onkeypress="if(event.key === 'Enter') filterPapers()">
-      <button onclick="filterPapers()" class="btn-outline rounded">搜索</button>
-    </div>
-    
-    <div class="overflow-x-auto">
-      <table class="w-full mt-4" style="border-collapse: collapse;">
-        <thead>
-          <tr style="border-bottom: 2px solid var(--border);">
-            <th class="text-left py-3 px-4 font-medium" style="color: var(--text-secondary);">年份</th>
-            <th class="text-left py-3 px-4 font-medium" style="color: var(--text-secondary);">初赛</th>
-            <th class="text-left py-3 px-4 font-medium" style="color: var(--text-secondary);">复赛</th>
-            <th class="text-left py-3 px-4 font-medium" style="color: var(--text-secondary);">决赛</th>
-          </tr>
-        </thead>
-        <tbody id="papersTable">
-          <tr><td colspan="4" class="text-center p-5"><div class="loading-spinner"></div></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p id="noPapersResult" class="text-center mt-4 hidden" style="color: var(--text-secondary);">未找到匹配的试卷</p>
-  </div>
-
-  <!-- BLOG PAGE -->
-  <div id="page-blog" class="page">
-    <h2 class="latex-section">博客文章</h2>
-    
-    <div class="flex gap-2 mb-6 mt-4">
-      <input type="text" id="blogSearch" class="search-input rounded flex-1" placeholder="搜索文章标题或摘要..." onkeypress="if(event.key === 'Enter') filterBlogs()">
-      <button onclick="filterBlogs()" class="btn-outline rounded">搜索</button>
-    </div>
-
-    <div id="blogList" class="space-y-4">
-      <div class="text-center p-10"><div class="loading-spinner"></div></div>
-    </div>
-    <p id="noBlogResult" class="text-center mt-4 hidden" style="color: var(--text-secondary);">未找到匹配的文章</p>
-  </div>
-
-  <!-- BLOG DETAIL PAGE -->
-  <div id="page-blog-detail" class="page">
-    <div class="mb-6">
-      <button onclick="backToBlogList()" class="btn-outline rounded text-sm">
-        <i class="fas fa-arrow-left mr-2"></i>返回文章列表
-      </button>
-    </div>
-    <article class="paper-card rounded-lg p-6">
-      <div id="blogDetailContent" class="markdown-content">
-        <div class="text-center p-10"><div class="loading-spinner"></div></div>
-      </div>
-    </article>
-  </div>
-
-  <!-- Footer -->
-  <footer class="footnote">
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-      <div>
-        <p style="margin-bottom: 0.5rem;"><strong>QPhO</strong> — Quantum Physics Olympiad</p>
-        <p style="font-size: 0.8rem;" id="footerOrg">主办：中国物理学会</p>
-      </div>
-      <div class="flex items-center space-x-6">
-        <a href="#" class="latex-link text-sm">联系我们</a>
-      </div>
-    </div>
-    <p class="text-center mt-6" style="font-size: 0.8rem;" id="footerCopy">© 2024 QPhO竞赛委员会. 保留所有权利.</p>
-  </footer>
-</main>
-
-<!-- Download Modal -->
-<div id="downloadModal" class="modal-overlay">
-  <div class="modal-box">
-    <h3 class="modal-title" id="modalTitle" style="font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);">资源链接</h3>
-    <p style="font-size: 0.95rem; margin-bottom: 0.5rem;">您即将下载/访问以下资源：</p>
-    <p id="modalResourceName" style="font-weight: 600; margin-bottom: 1rem;">资源名称</p>
-    
-    <div class="modal-url-box" id="modalUrlBox">
-      https://example.com/paper.pdf
-    </div>
-    
-    <div class="modal-actions" style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;">
-      <button onclick="closeModal()" class="btn-outline rounded">取消</button>
-      <button onclick="confirmDownload()" class="btn-primary rounded">跳转下载</button>
-    </div>
-  </div>
-</div>
-
-<script>
-// --- CONFIG & STATE ---
-const DATA_PATH = './data/';
-let siteConfig = {};
-let papersData = [];
-let blogIndexData = [];
-let noticesData = []; 
-
-// --- MARKDOWN PARSER SETUP (Safe Version) ---
-function parseMarkdown(text) {
-    // 1. Safety Check for Marked Library
-    if (typeof marked === 'undefined') {
-        console.error("Marked library is not loaded.");
-        return text ? String(text).replace(/</g, "&lt;").replace(/>/g, "&gt;") : ""; // Escape HTML if no library
-    }
-    
-    if (!text) return "";
-    
-    try {
-        let tempText = String(text);
-        let mathBlocks = [];
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QPhO - Quantum Physics Olympiad</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'serif': ['"Crimson Pro"', '"Source Serif 4"', 'Georgia', 'serif'],
+                        'mono': ['"JetBrains Mono"', '"Fira Code"', 'monospace']
+                    },
+                    colors: {
+                        latex: {
+                            light: '#fffff8',
+                            dark: '#1a1a2e',
+                            text: '#2c2c2c',
+                            textDark: '#e8e8e8',
+                            accent: '#c41e3a',
+                            muted: '#6b7280',
+                            border: '#d1d5db',
+                            borderDark: '#374151'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --bg-primary: #fffff8;
+            --bg-secondary: #fefefe;
+            --text-primary: #2c2c2c;
+            --text-secondary: #4a4a4a;
+            --accent: #c41e3a;
+            --border: #d1d5db;
+        }
         
-        // Extract display math ($$...$$) first
-        // Add newlines around it to force Markdown to treat it as a block
-        tempText = tempText.replace(/\$\$([\s\S]+?)\$\$/g, (match, p1) => {
-            mathBlocks.push({ type: 'display', math: p1 });
-            return `\n\nMATHBLOCK${mathBlocks.length - 1}ENDBLOCK\n\n`;
-        });
+        .dark {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --text-primary: #e8e8e8;
+            --text-secondary: #b0b0b0;
+            --accent: #e84393;
+            --border: #374151;
+        }
+        
+        body {
+            font-family: 'Crimson Pro', 'Source Serif 4', Georgia, serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        /* LaTeX-like Typography */
+        .latex-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+        }
+        
+        .latex-section {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+        
+        .latex-body {
+            font-size: 1.125rem;
+            line-height: 1.8;
+            text-align: justify;
+        }
+        
+        /* Markdown Content Styling (LaTeX-like) */
+        .markdown-content {
+            font-size: 1.125rem;
+            line-height: 1.9;
+            text-align: justify;
+        }
+        
+        .markdown-content h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 2.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .markdown-content h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.3rem;
+        }
+        
+        .markdown-content h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .markdown-content p {
+            margin-bottom: 1rem;
+            text-indent: 2em;
+        }
+        
+        .markdown-content p:first-of-type {
+            text-indent: 0;
+        }
+        
+        .markdown-content ul, .markdown-content ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .markdown-content li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .markdown-content blockquote {
+            border-left: 3px solid var(--accent);
+            padding-left: 1rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+        
+        .markdown-content code {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: rgba(128, 128, 128, 0.1);
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-size: 0.9em;
+        }
+        
+        .markdown-content pre {
+            background-color: rgba(128, 128, 128, 0.1);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+        }
+        
+        .markdown-content pre code {
+            background: none;
+            padding: 0;
+        }
+        
+        .markdown-content a {
+            color: var(--accent);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+        
+        .markdown-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+        
+        .markdown-content th, .markdown-content td {
+            border: 1px solid var(--border);
+            padding: 0.75rem;
+            text-align: left;
+        }
+        
+        .markdown-content th {
+            background-color: rgba(128, 128, 128, 0.1);
+            font-weight: 600;
+        }
+        
+        /* Navigation */
+        .nav-link {
+            position: relative;
+            padding: 0.5rem 1rem;
+            transition: color 0.2s ease;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background-color: var(--accent);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 80%;
+        }
+        
+        /* Card Styling */
+        .paper-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            max-width: 32rem;
+            width: 90%;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+        
+        /* Button */
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+            padding: 0.625rem 1.5rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 0.625rem 1.5rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(128, 128, 128, 0.1);
+        }
+        
+        /* Search Input */
+        .search-input {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            width: 100%;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.1);
+        }
+        
+        /* Scroll Animation */
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Loading Skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, rgba(128,128,128,0.1) 25%, rgba(128,128,128,0.2) 50%, rgba(128,128,128,0.1) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 0.25rem;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* Page Transition */
+        .page {
+            display: none;
+            opacity: 0;
+        }
+        
+        .page.active {
+            display: block;
+            animation: pageIn 0.4s ease forwards;
+        }
+        
+        @keyframes pageIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        /* KaTeX Display */
+        .katex-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 0.5rem 0;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--bg-primary)] bg-opacity-95 backdrop-blur-sm">
+        <div class="max-w-5xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <a href="#" onclick="navigate('home')" class="latex-title text-[var(--accent)] hover:opacity-80 transition-opacity">
+                    QPhO
+                </a>
+                <div class="flex items-center gap-1">
+                    <a href="#" onclick="navigate('home')" class="nav-link text-[var(--text-primary)]" data-page="home">首页</a>
+                    <a href="#" onclick="navigate('notices')" class="nav-link text-[var(--text-primary)]" data-page="notices">通知</a>
+                    <a href="#" onclick="navigate('papers')" class="nav-link text-[var(--text-primary)]" data-page="papers">试卷</a>
+                    <a href="#" onclick="navigate('blog')" class="nav-link text-[var(--text-primary)]" data-page="blog">博客</a>
+                    <a href="#" onclick="navigate('about')" class="nav-link text-[var(--text-primary)]" data-page="about">简介</a>
+                    <button onclick="toggleTheme()" class="ml-4 p-2 rounded-lg hover:bg-[rgba(128,128,128,0.1)] transition-colors" title="切换主题">
+                        <i class="fas fa-sun dark:hidden text-[var(--text-primary)]"></i>
+                        <i class="fas fa-moon hidden dark:inline text-[var(--text-primary)]"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-        // Extract inline math ($...$)
-        tempText = tempText.replace(/\$([^\$\n]+?)\$/g, (match, p1) => {
-            mathBlocks.push({ type: 'inline', math: p1 });
-            return `MATHBLOCK${mathBlocks.length - 1}ENDBLOCK`;
-        });
+    <!-- Main Content -->
+    <main class="max-w-5xl mx-auto px-6 py-8">
+        <!-- Home Page -->
+        <div id="page-home" class="page active">
+            <div class="text-center py-12">
+                <h1 class="latex-title text-4xl md:text-5xl mb-4" id="home-title">
+                    <span class="skeleton inline-block w-48 h-10"></span>
+                </h1>
+                <p class="text-xl text-[var(--text-secondary)] mb-8" id="home-subtitle">
+                    <span class="skeleton inline-block w-64 h-6"></span>
+                </p>
+            </div>
+            
+            <div class="markdown-content" id="home-content">
+                <div class="space-y-4">
+                    <div class="skeleton h-4 w-full"></div>
+                    <div class="skeleton h-4 w-5/6"></div>
+                    <div class="skeleton h-4 w-4/5"></div>
+                </div>
+            </div>
+            
+            <div class="mt-12 grid md:grid-cols-3 gap-6">
+                <div class="paper-card text-center cursor-pointer" onclick="navigate('notices')">
+                    <i class="fas fa-bullhorn text-3xl text-[var(--accent)] mb-4"></i>
+                    <h3 class="text-lg font-semibold mb-2">竞赛通知</h3>
+                    <p class="text-[var(--text-secondary)] text-sm">查看最新竞赛公告</p>
+                </div>
+                <div class="paper-card text-center cursor-pointer" onclick="navigate('papers')">
+                    <i class="fas fa-file-alt text-3xl text-[var(--accent)] mb-4"></i>
+                    <h3 class="text-lg font-semibold mb-2">试卷下载</h3>
+                    <p class="text-[var(--text-secondary)] text-sm">历年真题与答案</p>
+                </div>
+                <div class="paper-card text-center cursor-pointer" onclick="navigate('blog')">
+                    <i class="fas fa-book text-3xl text-[var(--accent)] mb-4"></i>
+                    <h3 class="text-lg font-semibold mb-2">博客文章</h3>
+                    <p class="text-[var(--text-secondary)] text-sm">学习资料与心得</p>
+                </div>
+            </div>
+        </div>
 
-        // 2. Parse Markdown
-        let html = marked.parse(tempText, { breaks: true, gfm: true });
+        <!-- Notices Page -->
+        <div id="page-notices" class="page">
+            <h2 class="latex-section flex items-center gap-3">
+                <i class="fas fa-bullhorn text-[var(--accent)]"></i>
+                竞赛通知
+            </h2>
+            
+            <div class="mb-6 relative">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"></i>
+                <input type="text" id="notice-search" class="search-input" placeholder="搜索通知..." oninput="filterNotices()">
+            </div>
+            
+            <div id="notices-list" class="space-y-4">
+                <!-- Notices will be loaded here -->
+            </div>
+        </div>
 
-        // 3. Restore Math Blocks
-        mathBlocks.forEach((block, index) => {
-            const placeholder = `MATHBLOCK${index}ENDBLOCK`;
-            if (block.type === 'display') {
-                // Robust Regex: Match <p> tags with optional whitespace around the placeholder
-                // Since we injected \n\n, marked will definitely wrap it in <p>
-                // We strip the <p> tags to get a standalone math block
-                html = html.replace(new RegExp(`<p>\\s*${placeholder}\\s*</p>`, 'g'), `$$${block.math}$$`);
-                
-                // Also handle raw replacement just in case
-                html = html.replace(new RegExp(placeholder, 'g'), `$$${block.math}$$`);
+        <!-- Papers Page -->
+        <div id="page-papers" class="page">
+            <h2 class="latex-section flex items-center gap-3">
+                <i class="fas fa-file-alt text-[var(--accent)]"></i>
+                试卷下载
+            </h2>
+            
+            <div class="mb-6 relative">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"></i>
+                <input type="text" id="paper-search" class="search-input" placeholder="搜索试卷..." oninput="filterPapers()">
+            </div>
+            
+            <div id="papers-list" class="space-y-4">
+                <!-- Papers will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Blog Page -->
+        <div id="page-blog" class="page">
+            <h2 class="latex-section flex items-center gap-3">
+                <i class="fas fa-book text-[var(--accent)]"></i>
+                博客文章
+            </h2>
+            
+            <div class="mb-6 relative">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"></i>
+                <input type="text" id="blog-search" class="search-input" placeholder="搜索文章..." oninput="filterBlogPosts()">
+            </div>
+            
+            <div id="blog-list" class="space-y-4">
+                <!-- Blog posts will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Blog Post Page -->
+        <div id="page-blog-post" class="page">
+            <button onclick="navigate('blog')" class="mb-6 text-[var(--accent)] hover:underline flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i>
+                返回文章列表
+            </button>
+            
+            <article id="blog-post-content" class="markdown-content">
+                <!-- Blog post content will be loaded here -->
+            </article>
+        </div>
+
+        <!-- About Page -->
+        <div id="page-about" class="page">
+            <h2 class="latex-section flex items-center gap-3">
+                <i class="fas fa-info-circle text-[var(--accent)]"></i>
+                关于竞赛
+            </h2>
+            
+            <div id="about-content" class="markdown-content">
+                <!-- About content will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-[var(--border)] mt-12 py-8">
+        <div class="max-w-5xl mx-auto px-6 text-center text-[var(--text-secondary)]">
+            <p id="footer-text">QPhO - Quantum Physics Olympiad</p>
+            <p class="mt-2 text-sm">
+                <a href="https://github.com/SuiYueMengHen/QPhO" target="_blank" class="text-[var(--accent)] hover:underline">
+                    <i class="fab fa-github mr-1"></i>GitHub
+                </a>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Download Modal -->
+    <div id="download-modal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                <i class="fas fa-download text-[var(--accent)]"></i>
+                下载文件
+            </h3>
+            <p class="text-[var(--text-secondary)] mb-2">文件名称：</p>
+            <p id="modal-filename" class="font-medium mb-4"></p>
+            <p class="text-[var(--text-secondary)] mb-2">下载链接：</p>
+            <a id="modal-link" href="#" target="_blank" class="text-[var(--accent)] underline break-all mb-6 block"></a>
+            <div class="flex gap-3 justify-end">
+                <button onclick="closeModal()" class="btn-secondary">取消</button>
+                <a id="modal-download-btn" href="#" target="_blank" class="btn-primary inline-flex items-center gap-2">
+                    <i class="fas fa-external-link-alt"></i>
+                    前往下载
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const CONFIG = {
+            baseUrl: 'https://suiyuemenghen.github.io/QPhO' ,
+            dataPath: '/data'
+        };
+
+        // Data storage
+        let appData = {
+            config: null,
+            notices: [],
+            papers: [],
+            blogIndex: [],
+            about: null
+        };
+
+        // Theme management
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        }
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+        }
+
+        // Navigation
+        function navigate(page, param = null) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            
+            const targetPage = document.getElementById(`page-${page}`);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+            
+            const navLink = document.querySelector(`.nav-link[data-page="${page}"]`);
+            if (navLink) {
+                navLink.classList.add('active');
+            }
+            
+            // Handle special pages
+            if (page === 'blog-post' && param) {
+                loadBlogPost(param);
+            }
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return false;
+        }
+
+        // Data loading functions
+        async function loadJSON(path) {
+            try {
+                const response = await fetch(`${CONFIG.baseUrl}${CONFIG.dataPath}${path}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error(`Failed to load ${path}:`, error);
+                return null;
+            }
+        }
+
+        async function loadMarkdown(path) {
+            try {
+                const response = await fetch(`${CONFIG.baseUrl}${CONFIG.dataPath}${path}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return await response.text();
+            } catch (error) {
+                console.error(`Failed to load ${path}:`, error);
+                return null;
+            }
+        }
+
+        // Initialize app
+        async function initApp() {
+            initTheme();
+            
+            // Load config
+            appData.config = await loadJSON('/config.json');
+            if (appData.config) {
+                updateHomeContent();
+                document.title = appData.config.title || 'QPhO';
+            }
+            
+            // Load other data
+            await Promise.all([
+                loadNotices(),
+                loadPapers(),
+                loadBlogIndex(),
+                loadAbout()
+            ]);
+        }
+
+        // Update home content
+        function updateHomeContent() {
+            const config = appData.config;
+            if (!config) return;
+            
+            document.getElementById('home-title').innerHTML = config.title || 'QPhO';
+            document.getElementById('home-subtitle').innerHTML = config.subtitle || '';
+            
+            if (config.homeContent) {
+                const contentEl = document.getElementById('home-content');
+                contentEl.innerHTML = marked.parse(config.homeContent);
+                renderMath(contentEl);
+            }
+            
+            if (config.footerText) {
+                document.getElementById('footer-text').textContent = config.footerText;
+            }
+        }
+
+        // Load notices
+        async function loadNotices() {
+            const data = await loadJSON('/notices.json');
+            if (data && data.notices) {
+                appData.notices = data.notices;
+                renderNotices(appData.notices);
+            }
+        }
+
+        function renderNotices(notices) {
+            const container = document.getElementById('notices-list');
+            if (!notices || notices.length === 0) {
+                container.innerHTML = '<p class="text-[var(--text-secondary)] text-center py-8">暂无通知</p>';
+                return;
+            }
+            
+            container.innerHTML = notices.map((notice, index) => `
+                <div class="paper-card fade-in" style="animation-delay: ${index * 0.1}s">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                ${notice.important ? '<span class="px-2 py-0.5 bg-[var(--accent)] text-white text-xs rounded">重要</span>' : ''}
+                                <span class="text-sm text-[var(--text-secondary)]">${notice.date || ''}</span>
+                            </div>
+                            <h3 class="text-lg font-semibold mb-2">${notice.title}</h3>
+                            <p class="text-[var(--text-secondary)]">${notice.summary || ''}</p>
+                        </div>
+                        ${notice.link ? `
+                            <a href="${notice.link}" target="_blank" class="btn-secondary text-sm whitespace-nowrap">
+                                查看详情
+                            </a>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterNotices() {
+            const query = document.getElementById('notice-search').value.toLowerCase();
+            const filtered = appData.notices.filter(n => 
+                n.title.toLowerCase().includes(query) || 
+                (n.summary && n.summary.toLowerCase().includes(query))
+            );
+            renderNotices(filtered);
+        }
+
+        // Load papers
+        async function loadPapers() {
+            const data = await loadJSON('/papers.json');
+            if (data && data.papers) {
+                appData.papers = data.papers;
+                renderPapers(appData.papers);
+            }
+        }
+
+        function renderPapers(papers) {
+            const container = document.getElementById('papers-list');
+            if (!papers || papers.length === 0) {
+                container.innerHTML = '<p class="text-[var(--text-secondary)] text-center py-8">暂无试卷</p>';
+                return;
+            }
+            
+            container.innerHTML = papers.map((paper, index) => `
+                <div class="paper-card fade-in" style="animation-delay: ${index * 0.1}s">
+                    <div class="flex items-center justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="px-2 py-0.5 bg-[rgba(128,128,128,0.2)] text-xs rounded">${paper.year || ''}</span>
+                                ${paper.type ? `<span class="px-2 py-0.5 bg-[rgba(128,128,128,0.2)] text-xs rounded">${paper.type}</span>` : ''}
+                            </div>
+                            <h3 class="text-lg font-semibold">${paper.title}</h3>
+                            ${paper.description ? `<p class="text-[var(--text-secondary)] text-sm mt-1">${paper.description}</p>` : ''}
+                        </div>
+                        <button onclick="showDownloadModal('${paper.title}', '${paper.link}')" class="btn-primary text-sm whitespace-nowrap">
+                            <i class="fas fa-download mr-1"></i>下载
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterPapers() {
+            const query = document.getElementById('paper-search').value.toLowerCase();
+            const filtered = appData.papers.filter(p => 
+                p.title.toLowerCase().includes(query) || 
+                (p.year && p.year.toString().includes(query)) ||
+                (p.type && p.type.toLowerCase().includes(query))
+            );
+            renderPapers(filtered);
+        }
+
+        // Load blog index
+        async function loadBlogIndex() {
+            const data = await loadJSON('/blog/index.json');
+            if (data && data.posts) {
+                appData.blogIndex = data.posts;
+                renderBlogList(appData.blogIndex);
+            }
+        }
+
+        function renderBlogList(posts) {
+            const container = document.getElementById('blog-list');
+            if (!posts || posts.length === 0) {
+                container.innerHTML = '<p class="text-[var(--text-secondary)] text-center py-8">暂无文章</p>';
+                return;
+            }
+            
+            container.innerHTML = posts.map((post, index) => `
+                <div class="paper-card fade-in cursor-pointer" style="animation-delay: ${index * 0.1}s" onclick="navigate('blog-post', '${post.id}')">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-sm text-[var(--text-secondary)]">${post.date || ''}</span>
+                                ${post.tags ? post.tags.map(tag => `<span class="px-2 py-0.5 bg-[rgba(128,128,128,0.2)] text-xs rounded">${tag}</span>`).join('') : ''}
+                            </div>
+                            <h3 class="text-lg font-semibold mb-2">${post.title}</h3>
+                            <p class="text-[var(--text-secondary)]">${post.summary || ''}</p>
+                        </div>
+                        <i class="fas fa-chevron-right text-[var(--text-secondary)]"></i>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterBlogPosts() {
+            const query = document.getElementById('blog-search').value.toLowerCase();
+            const filtered = appData.blogIndex.filter(p => 
+                p.title.toLowerCase().includes(query) || 
+                (p.summary && p.summary.toLowerCase().includes(query)) ||
+                (p.tags && p.tags.some(t => t.toLowerCase().includes(query)))
+            );
+            renderBlogList(filtered);
+        }
+
+        // Load blog post
+        async function loadBlogPost(postId) {
+            const post = appData.blogIndex.find(p => p.id === postId);
+            if (!post) return;
+            
+            const container = document.getElementById('blog-post-content');
+            container.innerHTML = '<div class="space-y-4"><div class="skeleton h-8 w-3/4"></div><div class="skeleton h-4 w-full"></div><div class="skeleton h-4 w-5/6"></div></div>';
+            
+            const content = await loadMarkdown(`/blog/posts/${postId}.md`);
+            if (content) {
+                container.innerHTML = marked.parse(content);
+                renderMath(container);
             } else {
-                html = html.replace(new RegExp(placeholder, 'g'), `$${block.math}$`);
+                container.innerHTML = '<p class="text-[var(--text-secondary)] text-center py-8">文章加载失败</p>';
+            }
+        }
+
+        // Load about
+        async function loadAbout() {
+            const data = await loadJSON('/about.json');
+            if (data) {
+                appData.about = data;
+                renderAbout();
+            }
+        }
+
+        function renderAbout() {
+            const container = document.getElementById('about-content');
+            const about = appData.about;
+            
+            if (!about) {
+                container.innerHTML = '<div class="space-y-4"><div class="skeleton h-4 w-full"></div><div class="skeleton h-4 w-5/6"></div></div>';
+                return;
+            }
+            
+            if (about.content) {
+                container.innerHTML = marked.parse(about.content);
+                renderMath(container);
+            }
+        }
+
+        // Render LaTeX math
+        function renderMath(element) {
+            renderMathInElement(element, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false},
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false}
+                ],
+                throwOnError: false
+            });
+        }
+
+        // Modal functions
+        function showDownloadModal(filename, link) {
+            document.getElementById('modal-filename').textContent = filename;
+            document.getElementById('modal-link').textContent = link;
+            document.getElementById('modal-link').href = link;
+            document.getElementById('modal-download-btn').href = link;
+            document.getElementById('download-modal').classList.add('active');
+        }
+
+        function closeModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('download-modal').classList.remove('active');
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
             }
         });
 
-        return html;
-    } catch (e) {
-        console.error("Error parsing markdown:", e);
-        return "<div style='text-align:center; color:#dc2626;'>内容解析错误</div>";
-    }
-}
-
-// --- DATA LOADERS ---
-
-async function loadConfig() {
-  try {
-    const res = await fetch(DATA_PATH + 'config.json');
-    if (!res.ok) throw new Error(`HTTP status ${res.status}`);
-    siteConfig = await res.json();
-    
-    // Safe DOM updates
-    const navTitle = document.getElementById('navTitle');
-    const homeTitle = document.getElementById('homeTitle');
-    const homeSubtitle = document.getElementById('homeSubtitle');
-    const footerOrg = document.getElementById('footerOrg');
-    const footerCopy = document.getElementById('footerCopy');
-
-    if (navTitle) navTitle.innerText = siteConfig.title.split(' - ')[0];
-    if (homeTitle) homeTitle.innerText = siteConfig.title.split(' - ')[1] || siteConfig.title;
-    if (homeSubtitle) homeSubtitle.innerText = siteConfig.subtitle;
-    if (footerOrg) footerOrg.innerText = "主办：" + siteConfig.organization;
-    if (footerCopy) footerCopy.innerText = "© " + siteConfig.copyright + ". 保留所有权利.";
-    
-  } catch (e) {
-    console.error("Failed to load config", e);
-  }
-}
-
-async function loadAbout() {
-  const container = document.getElementById('aboutContent');
-  if (!container) return; // Safety check
-
-  try {
-    const res = await fetch(DATA_PATH + 'about.json');
-    if (!res.ok) throw new Error(`HTTP status ${res.status}`);
-    const data = await res.json();
-    container.innerHTML = parseMarkdown(data.content);
-    renderMath();
-  } catch (e) {
-    console.error(e);
-    container.innerHTML = "<div style='text-align: center; color: #dc2626; padding: 2rem 0;'>加载简介失败</div>";
-  }
-}
-
-async function loadNotices() {
-  const container = document.getElementById('noticesList');
-  const homeContainer = document.getElementById('homeNotices');
-  
-  // Safety check
-  if (!container) return; 
-
-  try {
-    const res = await fetch(DATA_PATH + 'notices.json');
-    if (!res.ok) throw new Error(`HTTP status ${res.status}`);
-    noticesData = await res.json(); 
-    
-    // Render Full List
-    container.innerHTML = noticesData.map(n => `
-      <article class="paper-card rounded-lg p-5 cursor-pointer" onclick="openNoticeDetail('${n.id}')">
-        <span class="text-xs font-mono" style="color: var(--accent);">${n.date}</span>
-        <h3 class="text-lg font-medium mt-1 mb-2" style="color: var(--text-primary);">${n.title}</h3>
-        <div class="text-sm" style="color: var(--text-secondary);">${parseMarkdown(n.summary)}</div>
-      </article>
-    `).join('');
-
-    // Render Home Summary
-    if (homeContainer && noticesData.length > 0) {
-       const latest = noticesData[0];
-       homeContainer.innerHTML = `
-        <article class="paper-card rounded-lg p-5 cursor-pointer" onclick="navigateTo('notices')">
-          <span class="text-xs font-mono" style="color: var(--accent);">${latest.date}</span>
-          <h3 class="text-lg font-medium mt-1 mb-2" style="color: var(--text-primary);">${latest.title}</h3>
-          <div class="text-sm" style="color: var(--text-secondary);">${parseMarkdown(latest.summary)}</div>
-        </article>
-       `;
-    }
-    renderMath();
-  } catch (e) {
-    console.error(e);
-    container.innerHTML = "<div style='text-align: center; color: #dc2626; padding: 2rem 0;'>加载通知失败</div>";
-    if (homeContainer) homeContainer.innerHTML = "";
-  }
-}
-
-function openNoticeDetail(id) {
-    const notice = noticesData.find(n => n.id === id);
-    if (!notice) {
-        alert("通知内容未找到");
-        return;
-    }
-
-    const container = document.getElementById('noticeDetailContent');
-    if (!container) return;
-
-    container.innerHTML = `
-        <h1>${notice.title}</h1>
-        <p style="text-indent: 0; font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
-            <span class="font-mono">${notice.date}</span>
-        </p>
-        ${parseMarkdown(notice.content)}
-    `;
-    
-    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-    const detailPage = document.getElementById('page-notice-detail');
-    if (detailPage) detailPage.classList.add('active');
-    
-    window.scrollTo(0, 0);
-    renderMath();
-}
-
-function backToNoticesList() {
-    navigateTo('notices');
-}
-
-async function loadPapers() {
-  const tbody = document.getElementById('papersTable');
-  if (!tbody) return;
-
-  try {
-    const res = await fetch(DATA_PATH + 'papers.json');
-    if (!res.ok) throw new Error(`HTTP status ${res.status}`);
-    papersData = await res.json();
-    renderPapers(papersData);
-  } catch (e) {
-    console.error(e);
-    tbody.innerHTML = "<tr><td colspan='4' style='text-align: center; color: #dc2626; padding: 2rem 0;'>加载试卷列表失败</td></tr>";
-  }
-}
-
-async function loadBlogIndex() {
-  const container = document.getElementById('blogList');
-  if (!container) return;
-
-  try {
-    const res = await fetch(DATA_PATH + 'blog/index.json');
-    if (!res.ok) throw new Error(`HTTP status ${res.status}`);
-    blogIndexData = await res.json();
-    renderBlogList(blogIndexData);
-  } catch (e) {
-    console.error(e);
-    container.innerHTML = "<div style='text-align: center; color: #dc2626; padding: 2rem 0;'>加载博客列表失败</div>";
-  }
-}
-
-async function loadBlogPost(id) {
-  const container = document.getElementById('blogDetailContent');
-  if (!container) return;
-  
-  container.innerHTML = "<div class='text-center p-10'><div class='loading-spinner'></div></div>";
-  
-  try {
-    const meta = blogIndexData.find(p => p.id === id);
-    const res = await fetch(`${DATA_PATH}blog/posts/${id}.json`);
-    if (!res.ok) throw new Error(`HTTP status ${res.status}`);
-    const data = await res.json();
-    
-    container.innerHTML = `
-      <p style="text-indent: 0; font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
-        <span class="font-mono">${meta ? meta.date : ''}</span> · 作者：${meta ? meta.author : '未知'}
-      </p>
-      ${parseMarkdown(data.content)}
-    `;
-    renderMath();
-  } catch (e) {
-    console.error(e);
-    container.innerHTML = "<div style='text-align: center; color: #dc2626; padding: 2rem 0;'>加载文章内容失败</div>";
-  }
-}
-
-// --- RENDER FUNCTIONS ---
-
-function renderPapers(data) {
-  const tbody = document.getElementById('papersTable');
-  const noResult = document.getElementById('noPapersResult');
-  if (!tbody) return;
-  
-  if (!data || data.length === 0) {
-    tbody.innerHTML = '';
-    if (noResult) noResult.classList.remove('hidden');
-    return;
-  }
-  
-  if (noResult) noResult.classList.add('hidden');
-  tbody.innerHTML = data.map(paper => `
-    <tr style="border-bottom: 1px solid var(--border);">
-      <td class="py-3 px-4 font-mono">${paper.year}</td>
-      <td class="py-3 px-4 space-x-2">
-        <button class="latex-action-btn" onclick="openModal('${paper.year}年${paper.p.name}', '${paper.p.url}')">试卷</button>
-        <button class="latex-action-btn" onclick="openModal('${paper.year}年${paper.pa.name}', '${paper.pa.url}')">答案</button>
-      </td>
-      <td class="py-3 px-4 space-x-2">
-        <button class="latex-action-btn" onclick="openModal('${paper.year}年${paper.s.name}', '${paper.s.url}')">试卷</button>
-        <button class="latex-action-btn" onclick="openModal('${paper.year}年${paper.sa.name}', '${paper.sa.url}')">答案</button>
-      </td>
-      <td class="py-3 px-4 space-x-2">
-        <button class="latex-action-btn" onclick="openModal('${paper.year}年${paper.f.name}', '${paper.f.url}')">试卷</button>
-        <button class="latex-action-btn" onclick="openModal('${paper.year}年${paper.fa.name}', '${paper.fa.url}')">答案</button>
-      </td>
-    </tr>
-  `).join('');
-}
-
-function renderBlogList(data) {
-  const container = document.getElementById('blogList');
-  const noResult = document.getElementById('noBlogResult');
-  if (!container) return;
-  
-  if (!data || data.length === 0) {
-    container.innerHTML = '';
-    if (noResult) noResult.classList.remove('hidden');
-    return;
-  }
-  
-  if (noResult) noResult.classList.add('hidden');
-  container.innerHTML = data.map(post => `
-    <article class="paper-card rounded-lg p-5 cursor-pointer" onclick="openBlogPost(${post.id})">
-      <span class="text-xs font-mono" style="color: var(--accent);">${post.date}</span>
-      <h3 class="text-lg font-medium mt-1 mb-2" style="color: var(--text-primary);">${post.title}</h3>
-      <div class="text-sm" style="color: var(--text-secondary);">${parseMarkdown(post.summary)}</div>
-    </article>
-  `).join('');
-  renderMath();
-}
-
-// --- ACTIONS ---
-
-function navigateTo(pageId) {
-  document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-  const targetPage = document.getElementById('page-' + pageId);
-  if (targetPage) targetPage.classList.add('active');
-  
-  document.querySelectorAll('.nav-link').forEach(link => {
-    link.classList.remove('active');
-    if (link.getAttribute('data-page') === pageId) link.classList.add('active');
-  });
-  
-  window.scrollTo(0, 0);
-  
-  if (pageId === 'about') loadAbout();
-  if (pageId === 'notices') loadNotices();
-  if (pageId === 'papers') loadPapers();
-  if (pageId === 'blog') loadBlogIndex();
-}
-
-function filterPapers() {
-  const input = document.getElementById('paperSearch');
-  if (!input) return;
-  const searchText = input.value;
-  
-  if (!papersData.length) return;
-  const filtered = papersData.filter(p => p.year.includes(searchText));
-  renderPapers(filtered);
-}
-
-function filterBlogs() {
-  const input = document.getElementById('blogSearch');
-  if (!input) return;
-  const searchText = input.value.toLowerCase();
-  
-  if (!blogIndexData.length) return;
-  const filtered = blogIndexData.filter(p => 
-    p.title.toLowerCase().includes(searchText) || 
-    p.summary.toLowerCase().includes(searchText)
-  );
-  renderBlogList(filtered);
-}
-
-function openBlogPost(id) {
-  document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-  const detailPage = document.getElementById('page-blog-detail');
-  if (detailPage) detailPage.classList.add('active');
-  
-  window.scrollTo(0, 0);
-  loadBlogPost(id);
-}
-
-function backToBlogList() {
-  navigateTo('blog');
-}
-
-// --- MODAL LOGIC ---
-let currentDownloadUrl = '';
-
-function openModal(name, url) {
-  currentDownloadUrl = url;
-  const modal = document.getElementById('downloadModal');
-  const nameEl = document.getElementById('modalResourceName');
-  const urlEl = document.getElementById('modalUrlBox');
-  
-  if (nameEl) nameEl.innerText = name;
-  if (urlEl) urlEl.innerText = url;
-  if (modal) modal.classList.add('active');
-}
-
-function closeModal() {
-  const modal = document.getElementById('downloadModal');
-  if (modal) modal.classList.remove('active');
-}
-
-function confirmDownload() {
-  window.open(currentDownloadUrl, '_blank');
-  closeModal();
-}
-
-// --- UTILS ---
-
-function renderMath() {
-  if (typeof renderMathInElement === 'function') {
-    try {
-      renderMathInElement(document.body, {
-        delimiters: [
-          {left: '$$', right: '$$', display: true},
-          {left: '$', right: '$', display: false}
-        ]
-      });
-      
-      // Force centering for display math that might be wrapped in <p> tags
-      // This runs after KaTeX has rendered the DOM
-      document.querySelectorAll('.katex-display').forEach(el => {
-          const parent = el.parentElement;
-          if (parent && parent.tagName === 'P') {
-              parent.style.textAlign = 'center';
-              parent.style.textIndent = '0';
-          }
-      });
-
-    } catch(e) {
-        console.error("KaTeX rendering error", e);
-    }
-  }
-}
-
-function toggleTheme() {
-  document.documentElement.classList.toggle('dark');
-  localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-}
-
-function closeMobileMenu() {
-  const menu = document.getElementById('mobileMenu');
-  if (menu) menu.classList.remove('active');
-}
-
-// --- INITIALIZATION ---
-
-document.addEventListener('DOMContentLoaded', () => {
-  // 1. Theme Init (Safe)
-  try {
-    if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.documentElement.classList.add('dark');
-    }
-  } catch (e) {
-      console.error("Theme init failed", e);
-  }
-  
-  // 2. Event Listeners (Crucial for buttons)
-  try {
-    const themeToggle = document.getElementById('themeToggle');
-    const themeToggleMobile = document.getElementById('themeToggleMobile');
-    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-    const closeMobileMenuBtn = document.getElementById('closeMobileMenu');
-    const downloadModal = document.getElementById('downloadModal');
-
-    if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
-    if (themeToggleMobile) themeToggleMobile.addEventListener('click', toggleTheme);
-    if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', () => {
-        const menu = document.getElementById('mobileMenu');
-        if (menu) menu.classList.add('active');
-    });
-    if (closeMobileMenuBtn) closeMobileMenuBtn.addEventListener('click', closeMobileMenu);
-    if (downloadModal) downloadModal.addEventListener('click', (e) => {
-      if (e.target.id === 'downloadModal') closeModal();
-    });
-  } catch (e) {
-      console.error("Failed to attach event listeners", e);
-  }
-  
-  // 3. Initial Data Load (Async, non-blocking)
-  loadConfig();
-  loadNotices(); 
-});
-</script>
+        // Initialize
+        initApp();
+    </script>
 </body>
 </html>
