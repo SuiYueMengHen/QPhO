@@ -6,14 +6,14 @@
             "year": "2023",
             "type": "初赛",
             "description": "包含选择题、填空题和计算题",
-            "link": "https://example.com/papers/2023-preliminary.pdf"
+            "link": "https://github.com/SuiYueMengHen/QPhO/releases/download/v1.0/2023-preliminary.pdf"
         },
         {
             "id": "paper-2023-final",
             "title": "2023年QPhO决赛试卷",
             "year": "2023",
             "type": "决赛",
-            "link": "https://example.com/papers/2023-final.pdf"
+            "link": "https://github.com/SuiYueMengHen/QPhO/releases/download/v1.0/2023-final.pdf"
         }
     ]
 }
