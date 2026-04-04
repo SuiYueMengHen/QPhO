@@ -1,6 +1,6 @@
 {
-  "title": "QPhO - Quantum Physics Olympiad",
-  "subtitle": "探索量子世界的奥秘",
-  "organization": "中国物理学会",
-  "copyright": "2024 QPhO竞赛委员会"
+    "title": "QPhO",
+    "subtitle": "Quantum Physics Olympiad",
+    "homeContent": "## 欢迎\n\nQPhO（量子物理奥林匹克竞赛）是一项面向全球中学生的量子物理竞赛。\n\n### 宗旨\n\n本竞赛旨在激发学生对量子物理的兴趣，培养科学思维能力和创新精神。\n\n公式示例：薛定谔方程 $i\\hbar\\frac{\\partial}{\\partial t}\\Psi = \\hat{H}\\Psi$",
+    "footerText": "QPhO - Quantum Physics Olympiad"
 }
