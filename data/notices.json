@@ -5,14 +5,13 @@
             "title": "2024年QPhO竞赛报名通知",
             "date": "2024-01-15",
             "summary": "2024年量子物理奥林匹克竞赛现已开放报名，截止日期为2024年3月1日。",
-            "important": true,
-            "link": "https://example.com/notice/2024-registration"
+            "important": true
         },
         {
             "id": "notice-2",
             "title": "竞赛规则更新",
             "date": "2024-01-10",
-            "summary": "根据组委会决议，对竞赛规则进行了部分调整。",
+            "summary": "根据组委会决议，对竞赛规则进行了部分调整，请仔细阅读。",
             "important": false
         }
     ]
