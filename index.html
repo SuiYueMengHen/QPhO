@@ -26,7 +26,7 @@
                             dark: '#1a1a2e',
                             text: '#2c2c2c',
                             textDark: '#e8e8e8',
-                            accent: '#c41e3a',
+                            accent: '#c41e3a', // 统一使用深红色
                             muted: '#6b7280',
                             border: '#d1d5db',
                             borderDark: '#374151'
@@ -37,6 +37,7 @@
         }
     </script>
     <style>
+        /* CSS Variables for Theme */
         :root {
             --bg-primary: #fffff8;
             --bg-secondary: #fefefe;
@@ -51,7 +52,7 @@
             --bg-secondary: #16213e;
             --text-primary: #e8e8e8;
             --text-secondary: #b0b0b0;
-            --accent: #e84393;
+            --accent: #c41e3a; /* 强制暗夜模式也为红色 */
             --border: #374151;
         }
         
@@ -61,13 +62,14 @@
             color: var(--text-primary);
             transition: background-color 0.3s ease, color 0.3s ease;
         }
-        
+
         /* LaTeX-like Typography */
         .latex-title {
             font-size: 2.5rem;
             font-weight: 700;
             letter-spacing: -0.02em;
             line-height: 1.2;
+            color: var(--accent); /* 确保标题使用变量颜色 */
         }
         
         .latex-section {
@@ -79,17 +81,12 @@
             padding-bottom: 0.5rem;
         }
         
-        .latex-body {
-            font-size: 1.125rem;
-            line-height: 1.8;
-            text-align: justify;
-        }
-        
         /* Markdown Content Styling (LaTeX-like) */
         .markdown-content {
             font-size: 1.125rem;
             line-height: 1.9;
             text-align: justify;
+            counter-reset: h2-counter;
         }
         
         .markdown-content h1 {
@@ -107,6 +104,13 @@
             margin-bottom: 1rem;
             border-bottom: 1px solid var(--border);
             padding-bottom: 0.3rem;
+            counter-reset: h3-counter;
+        }
+        
+        .markdown-content h2::before {
+            counter-increment: h2-counter;
+            content: counter(h2-counter) ". ";
+            color: var(--accent);
         }
         
         .markdown-content h3 {
@@ -114,6 +118,19 @@
             font-weight: 600;
             margin-top: 1.5rem;
             margin-bottom: 0.75rem;
+            counter-reset: h4-counter;
+        }
+        
+        .markdown-content h3::before {
+            counter-increment: h3-counter;
+            content: counter(h2-counter) "." counter(h3-counter) " ";
+            color: var(--accent);
+        }
+
+        .markdown-content h4::before {
+            counter-increment: h4-counter;
+            content: counter(h2-counter) "." counter(h3-counter) "." counter(h4-counter) " ";
+            color: var(--accent);
         }
         
         .markdown-content p {
@@ -184,6 +201,28 @@
         .markdown-content th {
             background-color: rgba(128, 128, 128, 0.1);
             font-weight: 600;
+        }
+
+        /* Table of Contents Styling */
+        .toc-item {
+            display: block;
+            padding: 0.25rem 0;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .toc-item:hover, .toc-item.active {
+            color: var(--accent);
+            border-left-color: var(--accent);
+        }
+
+        .toc-item.h3 {
+            padding-left: 1.5rem;
+            font-size: 0.85rem;
         }
         
         /* Navigation */
@@ -305,35 +344,6 @@
             box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.1);
         }
         
-        /* Scroll Animation */
-        .fade-in {
-            animation: fadeIn 0.5s ease forwards;
-        }
-        
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        /* Loading Skeleton */
-        .skeleton {
-            background: linear-gradient(90deg, rgba(128,128,128,0.1) 25%, rgba(128,128,128,0.2) 50%, rgba(128,128,128,0.1) 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: 0.25rem;
-        }
-        
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-        
         /* Page Transition */
         .page {
             display: none;
@@ -356,14 +366,7 @@
             }
         }
         
-        /* KaTeX Display */
-        .katex-display {
-            margin: 1.5rem 0;
-            overflow-x: auto;
-            padding: 0.5rem 0;
-        }
-        
-        /* Custom Scrollbar */
+        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -388,7 +391,7 @@
     <nav class="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--bg-primary)] bg-opacity-95 backdrop-blur-sm">
         <div class="max-w-5xl mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
-                <a href="#" onclick="navigate('home')" class="latex-title text-[var(--accent)] hover:opacity-80 transition-opacity">
+                <a href="#" onclick="navigate('home')" class="latex-title hover:opacity-80 transition-opacity">
                     QPhO
                 </a>
                 <div class="flex items-center gap-1">
@@ -398,8 +401,8 @@
                     <a href="#" onclick="navigate('blog')" class="nav-link text-[var(--text-primary)]" data-page="blog">博客</a>
                     <a href="#" onclick="navigate('about')" class="nav-link text-[var(--text-primary)]" data-page="about">简介</a>
                     <button onclick="toggleTheme()" class="ml-4 p-2 rounded-lg hover:bg-[rgba(128,128,128,0.1)] transition-colors" title="切换主题">
-                        <i class="fas fa-sun dark:hidden text-[var(--text-primary)]"></i>
-                        <i class="fas fa-moon hidden dark:inline text-[var(--text-primary)]"></i>
+                        <i class="fas fa-sun dark:hidden text-[var(--accent)]"></i>
+                        <i class="fas fa-moon hidden dark:inline text-[var(--accent)]"></i>
                     </button>
                 </div>
             </div>
@@ -446,7 +449,7 @@
             </div>
         </div>
 
-        <!-- Notices Page -->
+        <!-- Notices List Page -->
         <div id="page-notices" class="page">
             <h2 class="latex-section flex items-center gap-3">
                 <i class="fas fa-bullhorn text-[var(--accent)]"></i>
@@ -461,6 +464,17 @@
             <div id="notices-list" class="space-y-4">
                 <!-- Notices will be loaded here -->
             </div>
+        </div>
+
+        <!-- Notice Detail Page -->
+        <div id="page-notice-detail" class="page">
+            <button onclick="navigate('notices')" class="mb-6 text-[var(--accent)] hover:underline flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i>
+                返回通知列表
+            </button>
+            <article id="notice-detail-content" class="markdown-content">
+                <!-- Content loaded here -->
+            </article>
         </div>
 
         <!-- Papers Page -->
@@ -480,7 +494,7 @@
             </div>
         </div>
 
-        <!-- Blog Page -->
+        <!-- Blog List Page -->
         <div id="page-blog" class="page">
             <h2 class="latex-section flex items-center gap-3">
                 <i class="fas fa-book text-[var(--accent)]"></i>
@@ -497,16 +511,29 @@
             </div>
         </div>
 
-        <!-- Blog Post Page -->
+        <!-- Blog Post Page (With TOC) -->
         <div id="page-blog-post" class="page">
             <button onclick="navigate('blog')" class="mb-6 text-[var(--accent)] hover:underline flex items-center gap-2">
                 <i class="fas fa-arrow-left"></i>
                 返回文章列表
             </button>
             
-            <article id="blog-post-content" class="markdown-content">
-                <!-- Blog post content will be loaded here -->
-            </article>
+            <div class="grid grid-cols-1 lg:grid-cols-[1fr_220px] gap-8">
+                <!-- Main Content -->
+                <article id="blog-post-content" class="markdown-content">
+                    <!-- Content loaded here -->
+                </article>
+                
+                <!-- TOC Sidebar -->
+                <aside class="hidden lg:block">
+                    <div class="sticky top-24">
+                        <h4 class="text-sm font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-4">目录</h4>
+                        <nav id="toc-container" class="border-l border-[var(--border)]">
+                            <!-- TOC items generated by JS -->
+                        </nav>
+                    </div>
+                </aside>
+            </div>
         </div>
 
         <!-- About Page -->
@@ -602,6 +629,8 @@
             // Handle special pages
             if (page === 'blog-post' && param) {
                 loadBlogPost(param);
+            } else if (page === 'notice-detail' && param) {
+                loadNoticeDetail(param);
             }
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -670,7 +699,7 @@
             }
         }
 
-        // Load notices
+        // --- Notices Logic ---
         async function loadNotices() {
             const data = await loadJSON('/notices.json');
             if (data && data.notices) {
@@ -687,7 +716,7 @@
             }
             
             container.innerHTML = notices.map((notice, index) => `
-                <div class="paper-card fade-in" style="animation-delay: ${index * 0.1}s">
+                <div class="paper-card fade-in cursor-pointer" style="animation-delay: ${index * 0.1}s" onclick="navigate('notice-detail', '${notice.id}')">
                     <div class="flex items-start justify-between gap-4">
                         <div class="flex-1">
                             <div class="flex items-center gap-2 mb-2">
@@ -697,11 +726,7 @@
                             <h3 class="text-lg font-semibold mb-2">${notice.title}</h3>
                             <p class="text-[var(--text-secondary)]">${notice.summary || ''}</p>
                         </div>
-                        ${notice.link ? `
-                            <a href="${notice.link}" target="_blank" class="btn-secondary text-sm whitespace-nowrap">
-                                查看详情
-                            </a>
-                        ` : ''}
+                        <i class="fas fa-chevron-right text-[var(--text-secondary)] mt-1"></i>
                     </div>
                 </div>
             `).join('');
@@ -716,7 +741,20 @@
             renderNotices(filtered);
         }
 
-        // Load papers
+        async function loadNoticeDetail(id) {
+            const container = document.getElementById('notice-detail-content');
+            container.innerHTML = '<div class="space-y-4"><div class="skeleton h-8 w-3/4"></div><div class="skeleton h-4 w-full"></div></div>';
+            
+            const content = await loadMarkdown(`/notices/${id}.md`);
+            if (content) {
+                container.innerHTML = marked.parse(content);
+                renderMath(container);
+            } else {
+                container.innerHTML = '<p class="text-[var(--text-secondary)] text-center py-8">通知加载失败</p>';
+            }
+        }
+
+        // --- Papers Logic ---
         async function loadPapers() {
             const data = await loadJSON('/papers.json');
             if (data && data.papers) {
@@ -761,7 +799,7 @@
             renderPapers(filtered);
         }
 
-        // Load blog index
+        // --- Blog Logic ---
         async function loadBlogIndex() {
             const data = await loadJSON('/blog/index.json');
             if (data && data.posts) {
@@ -804,24 +842,50 @@
             renderBlogList(filtered);
         }
 
-        // Load blog post
         async function loadBlogPost(postId) {
-            const post = appData.blogIndex.find(p => p.id === postId);
-            if (!post) return;
-            
             const container = document.getElementById('blog-post-content');
-            container.innerHTML = '<div class="space-y-4"><div class="skeleton h-8 w-3/4"></div><div class="skeleton h-4 w-full"></div><div class="skeleton h-4 w-5/6"></div></div>';
+            const tocContainer = document.getElementById('toc-container');
+            
+            container.innerHTML = '<div class="space-y-4"><div class="skeleton h-8 w-3/4"></div><div class="skeleton h-4 w-full"></div></div>';
+            tocContainer.innerHTML = '';
             
             const content = await loadMarkdown(`/blog/posts/${postId}.md`);
             if (content) {
                 container.innerHTML = marked.parse(content);
                 renderMath(container);
+                generateTOC(container, tocContainer);
             } else {
                 container.innerHTML = '<p class="text-[var(--text-secondary)] text-center py-8">文章加载失败</p>';
             }
         }
 
-        // Load about
+        function generateTOC(contentEl, tocEl) {
+            const headers = contentEl.querySelectorAll('h2, h3');
+            if (headers.length === 0) {
+                tocEl.parentElement.parentElement.classList.add('hidden');
+                return;
+            }
+
+            tocEl.innerHTML = '';
+            headers.forEach((header, index) => {
+                const id = `toc-header-${index}`;
+                header.id = id; // Add ID to header for anchor link
+                
+                const link = document.createElement('a');
+                link.href = `#${id}`;
+                link.textContent = header.textContent;
+                link.className = `toc-item ${header.tagName.toLowerCase()}`;
+                
+                link.onclick = (e) => {
+                    e.preventDefault();
+                    document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+                };
+                
+                tocEl.appendChild(link);
+            });
+        }
+
+        // --- About Logic ---
         async function loadAbout() {
             const data = await loadJSON('/about.json');
             if (data) {
@@ -835,7 +899,7 @@
             const about = appData.about;
             
             if (!about) {
-                container.innerHTML = '<div class="space-y-4"><div class="skeleton h-4 w-full"></div><div class="skeleton h-4 w-5/6"></div></div>';
+                container.innerHTML = '<div class="space-y-4"><div class="skeleton h-4 w-full"></div></div>';
                 return;
             }
             
