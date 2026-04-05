@@ -432,10 +432,15 @@
         <!-- Notices List -->
         <div id="page-notices" class="page">
             <h2 class="latex-section flex items-center gap-3"><i class="fas fa-bullhorn text-[var(--accent)]"></i>竞赛通知</h2>
-            <div class="mb-6 relative">
-                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"></i>
-                <input type="text" id="notice-search" class="search-input" placeholder="搜索通知..." oninput="filterNotices()">
+            
+            <div class="mb-6 flex gap-2">
+                <div class="relative flex-1">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"></i>
+                    <input type="text" id="notice-search" class="search-input" placeholder="搜索通知..." onkeydown="if(event.key==='Enter') filterNotices()">
+                </div>
+                <button onclick="filterNotices()" class="btn-secondary whitespace-nowrap">搜索</button>
             </div>
+            
             <div id="notices-list" class="space-y-4"></div>
         </div>
 
@@ -450,30 +455,45 @@
         <!-- Papers -->
         <div id="page-papers" class="page">
             <h2 class="latex-section flex items-center gap-3"><i class="fas fa-file-alt text-[var(--accent)]"></i>试卷下载</h2>
-            <div class="mb-6 relative">
-                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"></i>
-                <input type="text" id="paper-search" class="search-input" placeholder="搜索试卷..." oninput="filterPapers()">
+            
+            <div class="mb-6 flex gap-2">
+                <div class="relative flex-1">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"></i>
+                    <input type="text" id="paper-search" class="search-input" placeholder="搜索试卷..." onkeydown="if(event.key==='Enter') filterPapers()">
+                </div>
+                <button onclick="filterPapers()" class="btn-secondary whitespace-nowrap">搜索</button>
             </div>
+            
             <div id="papers-list" class="space-y-4"></div>
         </div>
 
-        <!-- Books (New) -->
+        <!-- Books -->
         <div id="page-books" class="page">
             <h2 class="latex-section flex items-center gap-3"><i class="fas fa-book-open text-[var(--accent)]"></i>电子书下载</h2>
-            <div class="mb-6 relative">
-                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"></i>
-                <input type="text" id="book-search" class="search-input" placeholder="搜索电子书..." oninput="filterBooks()">
+            
+            <div class="mb-6 flex gap-2">
+                <div class="relative flex-1">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"></i>
+                    <input type="text" id="book-search" class="search-input" placeholder="搜索电子书..." onkeydown="if(event.key==='Enter') filterBooks()">
+                </div>
+                <button onclick="filterBooks()" class="btn-secondary whitespace-nowrap">搜索</button>
             </div>
+            
             <div id="books-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
         </div>
 
         <!-- Blog List -->
         <div id="page-blog" class="page">
             <h2 class="latex-section flex items-center gap-3"><i class="fas fa-pen-nib text-[var(--accent)]"></i>博客文章</h2>
-            <div class="mb-6 relative">
-                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"></i>
-                <input type="text" id="blog-search" class="search-input" placeholder="搜索文章..." oninput="filterBlogPosts()">
+            
+            <div class="mb-6 flex gap-2">
+                <div class="relative flex-1">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"></i>
+                    <input type="text" id="blog-search" class="search-input" placeholder="搜索文章..." onkeydown="if(event.key==='Enter') filterBlogPosts()">
+                </div>
+                <button onclick="filterBlogPosts()" class="btn-secondary whitespace-nowrap">搜索</button>
             </div>
+            
             <div id="blog-list" class="space-y-4"></div>
         </div>
 
@@ -534,7 +554,7 @@
     <script>
         // Configuration
         const CONFIG = {
-            baseUrl: 'https://suiyuemenghen.github.io/QPhO', // 确保此处与您的仓库地址一致
+            baseUrl: 'https://suiyuemenghen.github.io/QPhO',
             dataPath: '/data',
             imagePath: '/data/images'
         };
@@ -573,7 +593,6 @@
         // Data Loaders with Cache Busting
         async function loadJSON(path) {
             try {
-                // 添加时间戳参数防止浏览器缓存
                 const url = `${CONFIG.baseUrl}${CONFIG.dataPath}${path}?t=${new Date().getTime()}`;
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -586,7 +605,6 @@
 
         async function loadMarkdown(path) {
             try {
-                // 添加时间戳参数防止浏览器缓存
                 const url = `${CONFIG.baseUrl}${CONFIG.dataPath}${path}?t=${new Date().getTime()}`;
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -708,14 +726,13 @@
             renderPapers(appData.papers.filter(p => p.title.toLowerCase().includes(q) || (p.year && p.year.toString().includes(q))));
         }
 
-        // Books (Fixed)
+        // Books
         async function loadBooks() {
             const data = await loadJSON('/books.json');
-            // 健壮性检查：确保 data 存在且 data.books 是数组
             if (data && Array.isArray(data.books)) {
                 appData.books = data.books;
             } else {
-                appData.books = []; // 如果格式错误，重置为空数组
+                appData.books = [];
             }
             renderBooks(appData.books);
         }
