@@ -1,0 +1,20 @@
+{
+    "books": [
+        {
+            "id": "book-1",
+            "title": "量子力学概论",
+            "author": "格里菲斯",
+            "cover": "griffiths.jpg", 
+            "description": "这是一本经典的量子力学入门教材，内容详实，适合初学者。请在 data/images 文件夹中放置对应的封面图片。",
+            "link": "https://github.com/SuiYueMengHen/QPhO/releases/download/v1.0/quantum-intro.pdf"
+        },
+        {
+            "id": "book-2",
+            "title": "费曼物理学讲义（第三卷）",
+            "author": "费曼",
+            "cover": "feynman.jpg",
+            "description": "费曼独特的视角解读量子力学，深入浅出。",
+            "link": "https://github.com/SuiYueMengHen/QPhO/releases/download/v1.0/feynman-v3.pdf"
+        }
+    ]
+}
