@@ -140,7 +140,7 @@
             text-indent: 0;
         }
 
-        /* Image Styling in Markdown */
+        /* Image Styling */
         .markdown-content img {
             max-width: 100%;
             height: auto;
@@ -534,9 +534,9 @@
     <script>
         // Configuration
         const CONFIG = {
-            baseUrl: 'https://suiyuemenghen.github.io/QPhO',
+            baseUrl: 'https://suiyuemenghen.github.io/QPhO', // 确保此处与您的仓库地址一致
             dataPath: '/data',
-            imagePath: '/data/images' // Dedicated path for images
+            imagePath: '/data/images'
         };
 
         let appData = { config: null, notices: [], papers: [], books: [], blogIndex: [], about: null };
@@ -570,10 +570,13 @@
             return false;
         }
 
-        // Data Loaders
+        // Data Loaders with Cache Busting
         async function loadJSON(path) {
             try {
-                const response = await fetch(`${CONFIG.baseUrl}${CONFIG.dataPath}${path}`);
+                // 添加时间戳参数防止浏览器缓存
+                const url = `${CONFIG.baseUrl}${CONFIG.dataPath}${path}?t=${new Date().getTime()}`;
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 return await response.json();
             } catch (error) {
                 console.error(`Load failed: ${path}`, error);
@@ -583,7 +586,10 @@
 
         async function loadMarkdown(path) {
             try {
-                const response = await fetch(`${CONFIG.baseUrl}${CONFIG.dataPath}${path}`);
+                // 添加时间戳参数防止浏览器缓存
+                const url = `${CONFIG.baseUrl}${CONFIG.dataPath}${path}?t=${new Date().getTime()}`;
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 return await response.text();
             } catch (error) {
                 console.error(`Load failed: ${path}`, error);
@@ -635,7 +641,7 @@
         }
         function renderNotices(list) {
             const c = document.getElementById('notices-list');
-            if (!list.length) { c.innerHTML = '<p class="text-center py-8 text-[var(--text-secondary)]">暂无通知</p>'; return; }
+            if (!list || !list.length) { c.innerHTML = '<p class="text-center py-8 text-[var(--text-secondary)]">暂无通知</p>'; return; }
             c.innerHTML = list.map((n, i) => `
                 <div class="paper-card fade-in cursor-pointer" style="animation-delay: ${i*0.1}s" onclick="navigate('notice-detail', '${n.id}')">
                     <div class="flex items-start justify-between gap-4">
@@ -678,7 +684,7 @@
         }
         function renderPapers(list) {
             const c = document.getElementById('papers-list');
-            if (!list.length) { c.innerHTML = '<p class="text-center py-8 text-[var(--text-secondary)]">暂无试卷</p>'; return; }
+            if (!list || !list.length) { c.innerHTML = '<p class="text-center py-8 text-[var(--text-secondary)]">暂无试卷</p>'; return; }
             c.innerHTML = list.map((p, i) => `
                 <div class="paper-card fade-in" style="animation-delay: ${i*0.1}s">
                     <div class="flex items-center justify-between gap-4">
@@ -702,17 +708,20 @@
             renderPapers(appData.papers.filter(p => p.title.toLowerCase().includes(q) || (p.year && p.year.toString().includes(q))));
         }
 
-        // Books (New)
+        // Books (Fixed)
         async function loadBooks() {
             const data = await loadJSON('/books.json');
-            if (data && data.books) {
+            // 健壮性检查：确保 data 存在且 data.books 是数组
+            if (data && Array.isArray(data.books)) {
                 appData.books = data.books;
-                renderBooks(appData.books);
+            } else {
+                appData.books = []; // 如果格式错误，重置为空数组
             }
+            renderBooks(appData.books);
         }
         function renderBooks(list) {
             const c = document.getElementById('books-list');
-            if (!list.length) { c.innerHTML = '<p class="text-center py-8 text-[var(--text-secondary)]">暂无电子书</p>'; return; }
+            if (!list || !list.length) { c.innerHTML = '<p class="text-center py-8 text-[var(--text-secondary)]">暂无电子书</p>'; return; }
             c.innerHTML = list.map((b, i) => `
                 <div class="paper-card fade-in flex flex-col" style="animation-delay: ${i*0.1}s">
                     <div class="flex items-start gap-4 mb-4">
@@ -746,7 +755,7 @@
         }
         function renderBlogList(list) {
             const c = document.getElementById('blog-list');
-            if (!list.length) { c.innerHTML = '<p class="text-center py-8 text-[var(--text-secondary)]">暂无文章</p>'; return; }
+            if (!list || !list.length) { c.innerHTML = '<p class="text-center py-8 text-[var(--text-secondary)]">暂无文章</p>'; return; }
             c.innerHTML = list.map((p, i) => `
                 <div class="paper-card fade-in cursor-pointer" style="animation-delay: ${i*0.1}s" onclick="navigate('blog-post', '${p.id}')">
                     <div class="flex items-start justify-between gap-4">
