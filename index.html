@@ -211,6 +211,10 @@
             font-weight: 600;
         }
 
+        /* KaTeX specific fixes */
+        .katex-display { margin: 1.5rem 0; overflow-x: auto; overflow-y: hidden; }
+        .katex { font-size: 1.1em; }
+
         /* TOC */
         .toc-item {
             display: block;
@@ -615,7 +619,7 @@
             }
         }
 
-        // Markdown Renderer Setup with Image Path Fix
+        // Advanced Markdown & LaTeX Renderer
         const renderer = new marked.Renderer();
         const originalImageRenderer = renderer.image;
         renderer.image = function(href, title, text) {
@@ -625,6 +629,49 @@
             return originalImageRenderer.call(this, href, title, text);
         };
         marked.use({ renderer });
+
+        function parseMarkdown(text) {
+            // 1. Protect LaTeX from Markdown parser
+            const mathBlocks = [];
+            
+            // Helper to store matches
+            const saveMath = (match) => {
+                mathBlocks.push(match);
+                return `MATHBLOCK${mathBlocks.length - 1}ENDBLOCK`;
+            };
+
+            // Protect block math first ($$...$$ and \[...\])
+            text = text.replace(/\$\$([\s\S]+?)\$\$/g, saveMath);
+            text = text.replace(/\\\[([\s\S]+?)\\\]/g, saveMath);
+
+            // Protect inline math ($...$ and \(...\))
+            // Note: \$ matches a single dollar sign (escape)
+            // We assume $...$ does not contain newlines for inline
+            text = text.replace(/(?<!\$)\$(?!\$)([^\$\n]+?)\$/g, saveMath);
+            text = text.replace(/\\\(([\s\S]+?)\\\)/g, saveMath);
+
+            // 2. Parse Markdown
+            let html = marked.parse(text);
+
+            // 3. Restore LaTeX
+            html = html.replace(/MATHBLOCK(\d+)ENDBLOCK/g, (match, index) => {
+                return mathBlocks[parseInt(index)];
+            });
+
+            return html;
+        }
+
+        function renderMath(element) {
+            renderMathInElement(element, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false},
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false}
+                ],
+                throwOnError: false
+            });
+        }
 
         // Init
         async function initApp() {
@@ -643,7 +690,7 @@
             document.getElementById('home-subtitle').innerHTML = appData.config.subtitle || '';
             if (appData.config.homeContent) {
                 const el = document.getElementById('home-content');
-                el.innerHTML = marked.parse(appData.config.homeContent);
+                el.innerHTML = parseMarkdown(appData.config.homeContent);
                 renderMath(el);
             }
             if (appData.config.footerText) document.getElementById('footer-text').textContent = appData.config.footerText;
@@ -685,7 +732,7 @@
             c.innerHTML = '<div class="space-y-4"><div class="skeleton h-8 w-3/4"></div><div class="skeleton h-4 w-full"></div></div>';
             const content = await loadMarkdown(`/notices/${id}.md`);
             if (content) {
-                c.innerHTML = marked.parse(content);
+                c.innerHTML = parseMarkdown(content);
                 renderMath(c);
             } else {
                 c.innerHTML = '<p class="text-center py-8 text-[var(--text-secondary)]">加载失败</p>';
@@ -800,7 +847,7 @@
             toc.innerHTML = '';
             const content = await loadMarkdown(`/blog/posts/${id}.md`);
             if (content) {
-                c.innerHTML = marked.parse(content);
+                c.innerHTML = parseMarkdown(content);
                 renderMath(c);
                 generateTOC(c, toc);
             } else {
@@ -829,23 +876,10 @@
                 appData.about = data;
                 const c = document.getElementById('about-content');
                 if (data.content) {
-                    c.innerHTML = marked.parse(data.content);
+                    c.innerHTML = parseMarkdown(data.content);
                     renderMath(c);
                 }
             }
-        }
-
-        // Math
-        function renderMath(el) {
-            renderMathInElement(el, {
-                delimiters: [
-                    {left: '$$', right: '$$', display: true},
-                    {left: '$', right: '$', display: false},
-                    {left: '\\[', right: '\\]', display: true},
-                    {left: '\\(', right: '\\)', display: false}
-                ],
-                throwOnError: false
-            });
         }
 
         // Modal
