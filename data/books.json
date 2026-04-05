@@ -7,6 +7,14 @@
             "cover": "book-1.jpeg", 
             "description": "从变分原理到辛几何，严谨阐述分析力学精髓，适合物理与数学专业的高年级教材。",
             "link": "https://heisenberg000.lanzoum.com/iUv6G3mh8wxg"
+        },
+        {
+            "id": "book-2",
+            "title": "特殊函数概论",
+            "author": "王竹溪，郭敦仁",
+            "cover": "book-2.png",
+            "description": "本书系统讲述Г函数、超几何函数、勒让德函数、贝塞尔函数、椭圆函数等主要特殊函数，阐明级数展开、渐进展开、常微分方程解法等常用理论，附有丰富习题，是数学物理领域的经典参考书。",
+            "link": "https://heisenberg000.lanzoum.com/i6SEY37g3zkf"
         }
     ]
 }
