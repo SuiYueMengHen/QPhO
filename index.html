@@ -26,7 +26,7 @@
                             dark: '#1a1a2e',
                             text: '#2c2c2c',
                             textDark: '#e8e8e8',
-                            accent: '#c41e3a', // 统一使用深红色
+                            accent: '#c41e3a',
                             muted: '#6b7280',
                             border: '#d1d5db',
                             borderDark: '#374151'
@@ -37,7 +37,6 @@
         }
     </script>
     <style>
-        /* CSS Variables for Theme */
         :root {
             --bg-primary: #fffff8;
             --bg-secondary: #fefefe;
@@ -52,7 +51,7 @@
             --bg-secondary: #16213e;
             --text-primary: #e8e8e8;
             --text-secondary: #b0b0b0;
-            --accent: #c41e3a; /* 强制暗夜模式也为红色 */
+            --accent: #c41e3a;
             --border: #374151;
         }
         
@@ -63,13 +62,12 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* LaTeX-like Typography */
         .latex-title {
             font-size: 2.5rem;
             font-weight: 700;
             letter-spacing: -0.02em;
             line-height: 1.2;
-            color: var(--accent); /* 确保标题使用变量颜色 */
+            color: var(--accent);
         }
         
         .latex-section {
@@ -81,7 +79,7 @@
             padding-bottom: 0.5rem;
         }
         
-        /* Markdown Content Styling (LaTeX-like) */
+        /* Markdown Content Styling */
         .markdown-content {
             font-size: 1.125rem;
             line-height: 1.9;
@@ -140,6 +138,16 @@
         
         .markdown-content p:first-of-type {
             text-indent: 0;
+        }
+
+        /* Image Styling in Markdown */
+        .markdown-content img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 2rem auto;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         
         .markdown-content ul, .markdown-content ol {
@@ -203,7 +211,7 @@
             font-weight: 600;
         }
 
-        /* Table of Contents Styling */
+        /* TOC */
         .toc-item {
             display: block;
             padding: 0.25rem 0;
@@ -249,7 +257,7 @@
             width: 80%;
         }
         
-        /* Card Styling */
+        /* Card */
         .paper-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border);
@@ -327,7 +335,7 @@
             background: rgba(128, 128, 128, 0.1);
         }
         
-        /* Search Input */
+        /* Search */
         .search-input {
             background: var(--bg-secondary);
             border: 1px solid var(--border);
@@ -356,34 +364,14 @@
         }
         
         @keyframes pageIn {
-            from {
-                opacity: 0;
-                transform: translateX(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
         }
         
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--text-secondary);
-        }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
     </style>
 </head>
 <body class="min-h-screen">
@@ -391,13 +379,12 @@
     <nav class="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--bg-primary)] bg-opacity-95 backdrop-blur-sm">
         <div class="max-w-5xl mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
-                <a href="#" onclick="navigate('home')" class="latex-title hover:opacity-80 transition-opacity">
-                    QPhO
-                </a>
+                <a href="#" onclick="navigate('home')" class="latex-title hover:opacity-80 transition-opacity">QPhO</a>
                 <div class="flex items-center gap-1">
                     <a href="#" onclick="navigate('home')" class="nav-link text-[var(--text-primary)]" data-page="home">首页</a>
                     <a href="#" onclick="navigate('notices')" class="nav-link text-[var(--text-primary)]" data-page="notices">通知</a>
                     <a href="#" onclick="navigate('papers')" class="nav-link text-[var(--text-primary)]" data-page="papers">试卷</a>
+                    <a href="#" onclick="navigate('books')" class="nav-link text-[var(--text-primary)]" data-page="books">电子书</a>
                     <a href="#" onclick="navigate('blog')" class="nav-link text-[var(--text-primary)]" data-page="blog">博客</a>
                     <a href="#" onclick="navigate('about')" class="nav-link text-[var(--text-primary)]" data-page="about">简介</a>
                     <button onclick="toggleTheme()" class="ml-4 p-2 rounded-lg hover:bg-[rgba(128,128,128,0.1)] transition-colors" title="切换主题">
@@ -414,138 +401,102 @@
         <!-- Home Page -->
         <div id="page-home" class="page active">
             <div class="text-center py-12">
-                <h1 class="latex-title text-4xl md:text-5xl mb-4" id="home-title">
-                    <span class="skeleton inline-block w-48 h-10"></span>
-                </h1>
-                <p class="text-xl text-[var(--text-secondary)] mb-8" id="home-subtitle">
-                    <span class="skeleton inline-block w-64 h-6"></span>
-                </p>
+                <h1 class="latex-title text-4xl md:text-5xl mb-4" id="home-title"><span class="skeleton inline-block w-48 h-10"></span></h1>
+                <p class="text-xl text-[var(--text-secondary)] mb-8" id="home-subtitle"><span class="skeleton inline-block w-64 h-6"></span></p>
             </div>
-            
-            <div class="markdown-content" id="home-content">
-                <div class="space-y-4">
-                    <div class="skeleton h-4 w-full"></div>
-                    <div class="skeleton h-4 w-5/6"></div>
-                    <div class="skeleton h-4 w-4/5"></div>
-                </div>
-            </div>
-            
-            <div class="mt-12 grid md:grid-cols-3 gap-6">
+            <div class="markdown-content" id="home-content"><div class="space-y-4"><div class="skeleton h-4 w-full"></div><div class="skeleton h-4 w-5/6"></div></div></div>
+            <div class="mt-12 grid md:grid-cols-4 gap-6">
                 <div class="paper-card text-center cursor-pointer" onclick="navigate('notices')">
                     <i class="fas fa-bullhorn text-3xl text-[var(--accent)] mb-4"></i>
                     <h3 class="text-lg font-semibold mb-2">竞赛通知</h3>
-                    <p class="text-[var(--text-secondary)] text-sm">查看最新竞赛公告</p>
+                    <p class="text-[var(--text-secondary)] text-sm">查看最新公告</p>
                 </div>
                 <div class="paper-card text-center cursor-pointer" onclick="navigate('papers')">
                     <i class="fas fa-file-alt text-3xl text-[var(--accent)] mb-4"></i>
                     <h3 class="text-lg font-semibold mb-2">试卷下载</h3>
-                    <p class="text-[var(--text-secondary)] text-sm">历年真题与答案</p>
+                    <p class="text-[var(--text-secondary)] text-sm">历年真题</p>
+                </div>
+                <div class="paper-card text-center cursor-pointer" onclick="navigate('books')">
+                    <i class="fas fa-book-open text-3xl text-[var(--accent)] mb-4"></i>
+                    <h3 class="text-lg font-semibold mb-2">电子书</h3>
+                    <p class="text-[var(--text-secondary)] text-sm">学习资料</p>
                 </div>
                 <div class="paper-card text-center cursor-pointer" onclick="navigate('blog')">
-                    <i class="fas fa-book text-3xl text-[var(--accent)] mb-4"></i>
+                    <i class="fas fa-pen-nib text-3xl text-[var(--accent)] mb-4"></i>
                     <h3 class="text-lg font-semibold mb-2">博客文章</h3>
-                    <p class="text-[var(--text-secondary)] text-sm">学习资料与心得</p>
+                    <p class="text-[var(--text-secondary)] text-sm">心得分享</p>
                 </div>
             </div>
         </div>
 
-        <!-- Notices List Page -->
+        <!-- Notices List -->
         <div id="page-notices" class="page">
-            <h2 class="latex-section flex items-center gap-3">
-                <i class="fas fa-bullhorn text-[var(--accent)]"></i>
-                竞赛通知
-            </h2>
-            
+            <h2 class="latex-section flex items-center gap-3"><i class="fas fa-bullhorn text-[var(--accent)]"></i>竞赛通知</h2>
             <div class="mb-6 relative">
                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"></i>
                 <input type="text" id="notice-search" class="search-input" placeholder="搜索通知..." oninput="filterNotices()">
             </div>
-            
-            <div id="notices-list" class="space-y-4">
-                <!-- Notices will be loaded here -->
-            </div>
+            <div id="notices-list" class="space-y-4"></div>
         </div>
 
-        <!-- Notice Detail Page -->
+        <!-- Notice Detail -->
         <div id="page-notice-detail" class="page">
             <button onclick="navigate('notices')" class="mb-6 text-[var(--accent)] hover:underline flex items-center gap-2">
-                <i class="fas fa-arrow-left"></i>
-                返回通知列表
+                <i class="fas fa-arrow-left"></i>返回通知列表
             </button>
-            <article id="notice-detail-content" class="markdown-content">
-                <!-- Content loaded here -->
-            </article>
+            <article id="notice-detail-content" class="markdown-content"></article>
         </div>
 
-        <!-- Papers Page -->
+        <!-- Papers -->
         <div id="page-papers" class="page">
-            <h2 class="latex-section flex items-center gap-3">
-                <i class="fas fa-file-alt text-[var(--accent)]"></i>
-                试卷下载
-            </h2>
-            
+            <h2 class="latex-section flex items-center gap-3"><i class="fas fa-file-alt text-[var(--accent)]"></i>试卷下载</h2>
             <div class="mb-6 relative">
                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"></i>
                 <input type="text" id="paper-search" class="search-input" placeholder="搜索试卷..." oninput="filterPapers()">
             </div>
-            
-            <div id="papers-list" class="space-y-4">
-                <!-- Papers will be loaded here -->
-            </div>
+            <div id="papers-list" class="space-y-4"></div>
         </div>
 
-        <!-- Blog List Page -->
+        <!-- Books (New) -->
+        <div id="page-books" class="page">
+            <h2 class="latex-section flex items-center gap-3"><i class="fas fa-book-open text-[var(--accent)]"></i>电子书下载</h2>
+            <div class="mb-6 relative">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"></i>
+                <input type="text" id="book-search" class="search-input" placeholder="搜索电子书..." oninput="filterBooks()">
+            </div>
+            <div id="books-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+        </div>
+
+        <!-- Blog List -->
         <div id="page-blog" class="page">
-            <h2 class="latex-section flex items-center gap-3">
-                <i class="fas fa-book text-[var(--accent)]"></i>
-                博客文章
-            </h2>
-            
+            <h2 class="latex-section flex items-center gap-3"><i class="fas fa-pen-nib text-[var(--accent)]"></i>博客文章</h2>
             <div class="mb-6 relative">
                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]"></i>
                 <input type="text" id="blog-search" class="search-input" placeholder="搜索文章..." oninput="filterBlogPosts()">
             </div>
-            
-            <div id="blog-list" class="space-y-4">
-                <!-- Blog posts will be loaded here -->
-            </div>
+            <div id="blog-list" class="space-y-4"></div>
         </div>
 
-        <!-- Blog Post Page (With TOC) -->
+        <!-- Blog Post -->
         <div id="page-blog-post" class="page">
             <button onclick="navigate('blog')" class="mb-6 text-[var(--accent)] hover:underline flex items-center gap-2">
-                <i class="fas fa-arrow-left"></i>
-                返回文章列表
+                <i class="fas fa-arrow-left"></i>返回文章列表
             </button>
-            
             <div class="grid grid-cols-1 lg:grid-cols-[1fr_220px] gap-8">
-                <!-- Main Content -->
-                <article id="blog-post-content" class="markdown-content">
-                    <!-- Content loaded here -->
-                </article>
-                
-                <!-- TOC Sidebar -->
+                <article id="blog-post-content" class="markdown-content"></article>
                 <aside class="hidden lg:block">
                     <div class="sticky top-24">
                         <h4 class="text-sm font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-4">目录</h4>
-                        <nav id="toc-container" class="border-l border-[var(--border)]">
-                            <!-- TOC items generated by JS -->
-                        </nav>
+                        <nav id="toc-container" class="border-l border-[var(--border)]"></nav>
                     </div>
                 </aside>
             </div>
         </div>
 
-        <!-- About Page -->
+        <!-- About -->
         <div id="page-about" class="page">
-            <h2 class="latex-section flex items-center gap-3">
-                <i class="fas fa-info-circle text-[var(--accent)]"></i>
-                关于竞赛
-            </h2>
-            
-            <div id="about-content" class="markdown-content">
-                <!-- About content will be loaded here -->
-            </div>
+            <h2 class="latex-section flex items-center gap-3"><i class="fas fa-info-circle text-[var(--accent)]"></i>关于竞赛</h2>
+            <div id="about-content" class="markdown-content"></div>
         </div>
     </main>
 
@@ -565,18 +516,16 @@
     <div id="download-modal" class="modal-overlay" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
-                <i class="fas fa-download text-[var(--accent)]"></i>
-                下载文件
+                <i class="fas fa-download text-[var(--accent)]"></i>下载资源
             </h3>
-            <p class="text-[var(--text-secondary)] mb-2">文件名称：</p>
+            <p class="text-[var(--text-secondary)] mb-2">资源名称：</p>
             <p id="modal-filename" class="font-medium mb-4"></p>
             <p class="text-[var(--text-secondary)] mb-2">下载链接：</p>
             <a id="modal-link" href="#" target="_blank" class="text-[var(--accent)] underline break-all mb-6 block"></a>
             <div class="flex gap-3 justify-end">
                 <button onclick="closeModal()" class="btn-secondary">取消</button>
                 <a id="modal-download-btn" href="#" target="_blank" class="btn-primary inline-flex items-center gap-2">
-                    <i class="fas fa-external-link-alt"></i>
-                    前往下载
+                    <i class="fas fa-external-link-alt"></i>前往下载
                 </a>
             </div>
         </div>
@@ -585,27 +534,19 @@
     <script>
         // Configuration
         const CONFIG = {
-            baseUrl: 'https://suiyuemenghen.github.io/QPhO' ,
-            dataPath: '/data'
+            baseUrl: 'https://suiyuemenghen.github.io/QPhO',
+            dataPath: '/data',
+            imagePath: '/data/images' // Dedicated path for images
         };
 
-        // Data storage
-        let appData = {
-            config: null,
-            notices: [],
-            papers: [],
-            blogIndex: [],
-            about: null
-        };
+        let appData = { config: null, notices: [], papers: [], books: [], blogIndex: [], about: null };
 
-        // Theme management
+        // Theme
         function initTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark');
             }
         }
-
         function toggleTheme() {
             document.documentElement.classList.toggle('dark');
             localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
@@ -617,34 +558,25 @@
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             
             const targetPage = document.getElementById(`page-${page}`);
-            if (targetPage) {
-                targetPage.classList.add('active');
-            }
+            if (targetPage) targetPage.classList.add('active');
             
             const navLink = document.querySelector(`.nav-link[data-page="${page}"]`);
-            if (navLink) {
-                navLink.classList.add('active');
-            }
+            if (navLink) navLink.classList.add('active');
             
-            // Handle special pages
-            if (page === 'blog-post' && param) {
-                loadBlogPost(param);
-            } else if (page === 'notice-detail' && param) {
-                loadNoticeDetail(param);
-            }
+            if (page === 'blog-post' && param) loadBlogPost(param);
+            if (page === 'notice-detail' && param) loadNoticeDetail(param);
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
             return false;
         }
 
-        // Data loading functions
+        // Data Loaders
         async function loadJSON(path) {
             try {
                 const response = await fetch(`${CONFIG.baseUrl}${CONFIG.dataPath}${path}`);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 return await response.json();
             } catch (error) {
-                console.error(`Failed to load ${path}:`, error);
+                console.error(`Load failed: ${path}`, error);
                 return null;
             }
         }
@@ -652,54 +584,48 @@
         async function loadMarkdown(path) {
             try {
                 const response = await fetch(`${CONFIG.baseUrl}${CONFIG.dataPath}${path}`);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 return await response.text();
             } catch (error) {
-                console.error(`Failed to load ${path}:`, error);
+                console.error(`Load failed: ${path}`, error);
                 return null;
             }
         }
 
-        // Initialize app
+        // Markdown Renderer Setup with Image Path Fix
+        const renderer = new marked.Renderer();
+        const originalImageRenderer = renderer.image;
+        renderer.image = function(href, title, text) {
+            if (href && !href.startsWith('http') && !href.startsWith('/')) {
+                href = `${CONFIG.baseUrl}${CONFIG.imagePath}/${href}`;
+            }
+            return originalImageRenderer.call(this, href, title, text);
+        };
+        marked.use({ renderer });
+
+        // Init
         async function initApp() {
             initTheme();
-            
-            // Load config
             appData.config = await loadJSON('/config.json');
             if (appData.config) {
                 updateHomeContent();
                 document.title = appData.config.title || 'QPhO';
             }
-            
-            // Load other data
-            await Promise.all([
-                loadNotices(),
-                loadPapers(),
-                loadBlogIndex(),
-                loadAbout()
-            ]);
+            await Promise.all([loadNotices(), loadPapers(), loadBooks(), loadBlogIndex(), loadAbout()]);
         }
 
-        // Update home content
         function updateHomeContent() {
-            const config = appData.config;
-            if (!config) return;
-            
-            document.getElementById('home-title').innerHTML = config.title || 'QPhO';
-            document.getElementById('home-subtitle').innerHTML = config.subtitle || '';
-            
-            if (config.homeContent) {
-                const contentEl = document.getElementById('home-content');
-                contentEl.innerHTML = marked.parse(config.homeContent);
-                renderMath(contentEl);
+            if (!appData.config) return;
+            document.getElementById('home-title').innerHTML = appData.config.title || 'QPhO';
+            document.getElementById('home-subtitle').innerHTML = appData.config.subtitle || '';
+            if (appData.config.homeContent) {
+                const el = document.getElementById('home-content');
+                el.innerHTML = marked.parse(appData.config.homeContent);
+                renderMath(el);
             }
-            
-            if (config.footerText) {
-                document.getElementById('footer-text').textContent = config.footerText;
-            }
+            if (appData.config.footerText) document.getElementById('footer-text').textContent = appData.config.footerText;
         }
 
-        // --- Notices Logic ---
+        // Notices
         async function loadNotices() {
             const data = await loadJSON('/notices.json');
             if (data && data.notices) {
@@ -707,54 +633,42 @@
                 renderNotices(appData.notices);
             }
         }
-
-        function renderNotices(notices) {
-            const container = document.getElementById('notices-list');
-            if (!notices || notices.length === 0) {
-                container.innerHTML = '<p class="text-[var(--text-secondary)] text-center py-8">暂无通知</p>';
-                return;
-            }
-            
-            container.innerHTML = notices.map((notice, index) => `
-                <div class="paper-card fade-in cursor-pointer" style="animation-delay: ${index * 0.1}s" onclick="navigate('notice-detail', '${notice.id}')">
+        function renderNotices(list) {
+            const c = document.getElementById('notices-list');
+            if (!list.length) { c.innerHTML = '<p class="text-center py-8 text-[var(--text-secondary)]">暂无通知</p>'; return; }
+            c.innerHTML = list.map((n, i) => `
+                <div class="paper-card fade-in cursor-pointer" style="animation-delay: ${i*0.1}s" onclick="navigate('notice-detail', '${n.id}')">
                     <div class="flex items-start justify-between gap-4">
                         <div class="flex-1">
                             <div class="flex items-center gap-2 mb-2">
-                                ${notice.important ? '<span class="px-2 py-0.5 bg-[var(--accent)] text-white text-xs rounded">重要</span>' : ''}
-                                <span class="text-sm text-[var(--text-secondary)]">${notice.date || ''}</span>
+                                ${n.important ? '<span class="px-2 py-0.5 bg-[var(--accent)] text-white text-xs rounded">重要</span>' : ''}
+                                <span class="text-sm text-[var(--text-secondary)]">${n.date || ''}</span>
                             </div>
-                            <h3 class="text-lg font-semibold mb-2">${notice.title}</h3>
-                            <p class="text-[var(--text-secondary)]">${notice.summary || ''}</p>
+                            <h3 class="text-lg font-semibold mb-2">${n.title}</h3>
+                            <p class="text-[var(--text-secondary)]">${n.summary || ''}</p>
                         </div>
                         <i class="fas fa-chevron-right text-[var(--text-secondary)] mt-1"></i>
                     </div>
                 </div>
             `).join('');
         }
-
         function filterNotices() {
-            const query = document.getElementById('notice-search').value.toLowerCase();
-            const filtered = appData.notices.filter(n => 
-                n.title.toLowerCase().includes(query) || 
-                (n.summary && n.summary.toLowerCase().includes(query))
-            );
-            renderNotices(filtered);
+            const q = document.getElementById('notice-search').value.toLowerCase();
+            renderNotices(appData.notices.filter(n => n.title.toLowerCase().includes(q) || (n.summary && n.summary.toLowerCase().includes(q))));
         }
-
         async function loadNoticeDetail(id) {
-            const container = document.getElementById('notice-detail-content');
-            container.innerHTML = '<div class="space-y-4"><div class="skeleton h-8 w-3/4"></div><div class="skeleton h-4 w-full"></div></div>';
-            
+            const c = document.getElementById('notice-detail-content');
+            c.innerHTML = '<div class="space-y-4"><div class="skeleton h-8 w-3/4"></div><div class="skeleton h-4 w-full"></div></div>';
             const content = await loadMarkdown(`/notices/${id}.md`);
             if (content) {
-                container.innerHTML = marked.parse(content);
-                renderMath(container);
+                c.innerHTML = marked.parse(content);
+                renderMath(c);
             } else {
-                container.innerHTML = '<p class="text-[var(--text-secondary)] text-center py-8">通知加载失败</p>';
+                c.innerHTML = '<p class="text-center py-8 text-[var(--text-secondary)]">加载失败</p>';
             }
         }
 
-        // --- Papers Logic ---
+        // Papers
         async function loadPapers() {
             const data = await loadJSON('/papers.json');
             if (data && data.papers) {
@@ -762,44 +676,67 @@
                 renderPapers(appData.papers);
             }
         }
-
-        function renderPapers(papers) {
-            const container = document.getElementById('papers-list');
-            if (!papers || papers.length === 0) {
-                container.innerHTML = '<p class="text-[var(--text-secondary)] text-center py-8">暂无试卷</p>';
-                return;
-            }
-            
-            container.innerHTML = papers.map((paper, index) => `
-                <div class="paper-card fade-in" style="animation-delay: ${index * 0.1}s">
+        function renderPapers(list) {
+            const c = document.getElementById('papers-list');
+            if (!list.length) { c.innerHTML = '<p class="text-center py-8 text-[var(--text-secondary)]">暂无试卷</p>'; return; }
+            c.innerHTML = list.map((p, i) => `
+                <div class="paper-card fade-in" style="animation-delay: ${i*0.1}s">
                     <div class="flex items-center justify-between gap-4">
                         <div class="flex-1">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="px-2 py-0.5 bg-[rgba(128,128,128,0.2)] text-xs rounded">${paper.year || ''}</span>
-                                ${paper.type ? `<span class="px-2 py-0.5 bg-[rgba(128,128,128,0.2)] text-xs rounded">${paper.type}</span>` : ''}
+                                <span class="px-2 py-0.5 bg-[rgba(128,128,128,0.2)] text-xs rounded">${p.year || ''}</span>
+                                ${p.type ? `<span class="px-2 py-0.5 bg-[rgba(128,128,128,0.2)] text-xs rounded">${p.type}</span>` : ''}
                             </div>
-                            <h3 class="text-lg font-semibold">${paper.title}</h3>
-                            ${paper.description ? `<p class="text-[var(--text-secondary)] text-sm mt-1">${paper.description}</p>` : ''}
+                            <h3 class="text-lg font-semibold">${p.title}</h3>
+                            ${p.description ? `<p class="text-[var(--text-secondary)] text-sm mt-1">${p.description}</p>` : ''}
                         </div>
-                        <button onclick="showDownloadModal('${paper.title}', '${paper.link}')" class="btn-primary text-sm whitespace-nowrap">
+                        <button onclick="showDownloadModal('${p.title}', '${p.link}')" class="btn-primary text-sm whitespace-nowrap">
                             <i class="fas fa-download mr-1"></i>下载
                         </button>
                     </div>
                 </div>
             `).join('');
         }
-
         function filterPapers() {
-            const query = document.getElementById('paper-search').value.toLowerCase();
-            const filtered = appData.papers.filter(p => 
-                p.title.toLowerCase().includes(query) || 
-                (p.year && p.year.toString().includes(query)) ||
-                (p.type && p.type.toLowerCase().includes(query))
-            );
-            renderPapers(filtered);
+            const q = document.getElementById('paper-search').value.toLowerCase();
+            renderPapers(appData.papers.filter(p => p.title.toLowerCase().includes(q) || (p.year && p.year.toString().includes(q))));
         }
 
-        // --- Blog Logic ---
+        // Books (New)
+        async function loadBooks() {
+            const data = await loadJSON('/books.json');
+            if (data && data.books) {
+                appData.books = data.books;
+                renderBooks(appData.books);
+            }
+        }
+        function renderBooks(list) {
+            const c = document.getElementById('books-list');
+            if (!list.length) { c.innerHTML = '<p class="text-center py-8 text-[var(--text-secondary)]">暂无电子书</p>'; return; }
+            c.innerHTML = list.map((b, i) => `
+                <div class="paper-card fade-in flex flex-col" style="animation-delay: ${i*0.1}s">
+                    <div class="flex items-start gap-4 mb-4">
+                        <div class="w-20 h-28 bg-[rgba(128,128,128,0.1)] rounded flex-shrink-0 overflow-hidden flex items-center justify-center">
+                            ${b.cover ? `<img src="${CONFIG.baseUrl}${CONFIG.imagePath}/${b.cover}" alt="${b.title}" class="w-full h-full object-cover">` : `<i class="fas fa-book text-2xl text-[var(--text-secondary)]"></i>`}
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold">${b.title}</h3>
+                            <p class="text-sm text-[var(--text-secondary)] mb-1">${b.author || '未知作者'}</p>
+                            <p class="text-sm text-[var(--text-secondary)] line-clamp-3">${b.description || ''}</p>
+                        </div>
+                    </div>
+                    <button onclick="showDownloadModal('${b.title}', '${b.link}')" class="btn-primary text-sm mt-auto self-end">
+                        <i class="fas fa-download mr-1"></i>下载
+                    </button>
+                </div>
+            `).join('');
+        }
+        function filterBooks() {
+            const q = document.getElementById('book-search').value.toLowerCase();
+            renderBooks(appData.books.filter(b => b.title.toLowerCase().includes(q) || (b.author && b.author.toLowerCase().includes(q))));
+        }
+
+        // Blog
         async function loadBlogIndex() {
             const data = await loadJSON('/blog/index.json');
             if (data && data.posts) {
@@ -807,111 +744,74 @@
                 renderBlogList(appData.blogIndex);
             }
         }
-
-        function renderBlogList(posts) {
-            const container = document.getElementById('blog-list');
-            if (!posts || posts.length === 0) {
-                container.innerHTML = '<p class="text-[var(--text-secondary)] text-center py-8">暂无文章</p>';
-                return;
-            }
-            
-            container.innerHTML = posts.map((post, index) => `
-                <div class="paper-card fade-in cursor-pointer" style="animation-delay: ${index * 0.1}s" onclick="navigate('blog-post', '${post.id}')">
+        function renderBlogList(list) {
+            const c = document.getElementById('blog-list');
+            if (!list.length) { c.innerHTML = '<p class="text-center py-8 text-[var(--text-secondary)]">暂无文章</p>'; return; }
+            c.innerHTML = list.map((p, i) => `
+                <div class="paper-card fade-in cursor-pointer" style="animation-delay: ${i*0.1}s" onclick="navigate('blog-post', '${p.id}')">
                     <div class="flex items-start justify-between gap-4">
                         <div class="flex-1">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="text-sm text-[var(--text-secondary)]">${post.date || ''}</span>
-                                ${post.tags ? post.tags.map(tag => `<span class="px-2 py-0.5 bg-[rgba(128,128,128,0.2)] text-xs rounded">${tag}</span>`).join('') : ''}
+                                <span class="text-sm text-[var(--text-secondary)]">${p.date || ''}</span>
+                                ${p.tags ? p.tags.map(t => `<span class="px-2 py-0.5 bg-[rgba(128,128,128,0.2)] text-xs rounded">${t}</span>`).join('') : ''}
                             </div>
-                            <h3 class="text-lg font-semibold mb-2">${post.title}</h3>
-                            <p class="text-[var(--text-secondary)]">${post.summary || ''}</p>
+                            <h3 class="text-lg font-semibold mb-2">${p.title}</h3>
+                            <p class="text-[var(--text-secondary)]">${p.summary || ''}</p>
                         </div>
                         <i class="fas fa-chevron-right text-[var(--text-secondary)]"></i>
                     </div>
                 </div>
             `).join('');
         }
-
         function filterBlogPosts() {
-            const query = document.getElementById('blog-search').value.toLowerCase();
-            const filtered = appData.blogIndex.filter(p => 
-                p.title.toLowerCase().includes(query) || 
-                (p.summary && p.summary.toLowerCase().includes(query)) ||
-                (p.tags && p.tags.some(t => t.toLowerCase().includes(query)))
-            );
-            renderBlogList(filtered);
+            const q = document.getElementById('blog-search').value.toLowerCase();
+            renderBlogList(appData.blogIndex.filter(p => p.title.toLowerCase().includes(q) || (p.summary && p.summary.toLowerCase().includes(q))));
         }
-
-        async function loadBlogPost(postId) {
-            const container = document.getElementById('blog-post-content');
-            const tocContainer = document.getElementById('toc-container');
-            
-            container.innerHTML = '<div class="space-y-4"><div class="skeleton h-8 w-3/4"></div><div class="skeleton h-4 w-full"></div></div>';
-            tocContainer.innerHTML = '';
-            
-            const content = await loadMarkdown(`/blog/posts/${postId}.md`);
+        async function loadBlogPost(id) {
+            const c = document.getElementById('blog-post-content');
+            const toc = document.getElementById('toc-container');
+            c.innerHTML = '<div class="space-y-4"><div class="skeleton h-8 w-3/4"></div></div>';
+            toc.innerHTML = '';
+            const content = await loadMarkdown(`/blog/posts/${id}.md`);
             if (content) {
-                container.innerHTML = marked.parse(content);
-                renderMath(container);
-                generateTOC(container, tocContainer);
+                c.innerHTML = marked.parse(content);
+                renderMath(c);
+                generateTOC(c, toc);
             } else {
-                container.innerHTML = '<p class="text-[var(--text-secondary)] text-center py-8">文章加载失败</p>';
+                c.innerHTML = '<p class="text-center py-8 text-[var(--text-secondary)]">加载失败</p>';
             }
         }
-
         function generateTOC(contentEl, tocEl) {
             const headers = contentEl.querySelectorAll('h2, h3');
-            if (headers.length === 0) {
-                tocEl.parentElement.parentElement.classList.add('hidden');
-                return;
-            }
-
-            tocEl.innerHTML = '';
-            headers.forEach((header, index) => {
-                const id = `toc-header-${index}`;
-                header.id = id; // Add ID to header for anchor link
-                
-                const link = document.createElement('a');
-                link.href = `#${id}`;
-                link.textContent = header.textContent;
-                link.className = `toc-item ${header.tagName.toLowerCase()}`;
-                
-                link.onclick = (e) => {
-                    e.preventDefault();
-                    document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
-                };
-                
-                tocEl.appendChild(link);
+            if (!headers.length) return;
+            headers.forEach((h, i) => {
+                const id = `toc-${i}`;
+                h.id = id;
+                const a = document.createElement('a');
+                a.href = `#${id}`;
+                a.textContent = h.textContent;
+                a.className = `toc-item ${h.tagName.toLowerCase()}`;
+                a.onclick = (e) => { e.preventDefault(); document.getElementById(id).scrollIntoView({behavior: 'smooth'}); };
+                tocEl.appendChild(a);
             });
         }
 
-        // --- About Logic ---
+        // About
         async function loadAbout() {
             const data = await loadJSON('/about.json');
             if (data) {
                 appData.about = data;
-                renderAbout();
+                const c = document.getElementById('about-content');
+                if (data.content) {
+                    c.innerHTML = marked.parse(data.content);
+                    renderMath(c);
+                }
             }
         }
 
-        function renderAbout() {
-            const container = document.getElementById('about-content');
-            const about = appData.about;
-            
-            if (!about) {
-                container.innerHTML = '<div class="space-y-4"><div class="skeleton h-4 w-full"></div></div>';
-                return;
-            }
-            
-            if (about.content) {
-                container.innerHTML = marked.parse(about.content);
-                renderMath(container);
-            }
-        }
-
-        // Render LaTeX math
-        function renderMath(element) {
-            renderMathInElement(element, {
+        // Math
+        function renderMath(el) {
+            renderMathInElement(el, {
                 delimiters: [
                     {left: '$$', right: '$$', display: true},
                     {left: '$', right: '$', display: false},
@@ -922,28 +822,21 @@
             });
         }
 
-        // Modal functions
-        function showDownloadModal(filename, link) {
-            document.getElementById('modal-filename').textContent = filename;
+        // Modal
+        function showDownloadModal(name, link) {
+            document.getElementById('modal-filename').textContent = name;
             document.getElementById('modal-link').textContent = link;
             document.getElementById('modal-link').href = link;
             document.getElementById('modal-download-btn').href = link;
             document.getElementById('download-modal').classList.add('active');
         }
-
-        function closeModal(event) {
-            if (event && event.target !== event.currentTarget) return;
+        function closeModal(e) {
+            if (e && e.target !== e.currentTarget) return;
             document.getElementById('download-modal').classList.remove('active');
         }
 
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                closeModal();
-            }
-        });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-        // Initialize
         initApp();
     </script>
 </body>
